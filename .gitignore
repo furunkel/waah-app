@@ -1,0 +1,18 @@
+tmp
+*.mrb
+*.swp
+*.swo
+*.so
+*~
+
+# Android
+*.apk
+*.ap_
+*.dex
+*.class
+android/bin/
+android/gen/
+android/local.properties
+android/.classpath
+android/.project
+
