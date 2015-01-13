@@ -1,4 +1,4 @@
-class ExampleApp < Yeah::App
+class ExampleApp < Waah::App
   def setup
     rate 40.0
     log :verbose, "Running app" if android?

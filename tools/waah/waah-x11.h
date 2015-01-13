@@ -5,13 +5,13 @@ typedef struct x11_app_s {
   app_t base;
 } x11_app_t;
 
-#define YEAH_APP_STRUCT x11_app_t
+#define WAAH_APP_STRUCT x11_app_t
 static x11_app_t *app;
 
 static void
 _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
   app_t *app = (app_t *) x11_app;
-  yeah_canvas_t *canvas = (yeah_canvas_t *) app;
+  waah_canvas_t *canvas = (waah_canvas_t *) app;
   display_t *display = &app->display;
   keyboard_t *keyboard = app->keyboard;
   pointer_t *mouse = app->pointers[0];

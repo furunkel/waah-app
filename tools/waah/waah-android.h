@@ -2,7 +2,7 @@
 #include <android/log.h>
 
 #include <jni.h>
-#define LOG_TAG "yeah"
+#define LOG_TAG "waah"
 #undef LOGI
 #undef LOGW
 #undef LOGE
@@ -32,7 +32,7 @@ typedef struct android_app_s {
   struct event event;
 } android_app_t;
 
-#define YEAH_APP_STRUCT android_app_t
+#define WAAH_APP_STRUCT android_app_t
 static android_app_t *app;
 
 
@@ -85,7 +85,7 @@ app_log(mrb_state *mrb, mrb_value self) {
   mrb_get_args(mrb, "nz|z", &level, &msg, &tag);
 
   if(tag == NULL) {
-    tag = "yeah";
+    tag = "waah";
   }
 
   if(level == mrb_intern_lit(mrb, "warn")) {
@@ -207,7 +207,7 @@ static int32_t handle_input(struct android_app* aapp, AInputEvent* event) {
   /* app->userData is available here */
   struct user_data *user_data = (struct user_data *) aapp->userData;
 
-  //yeah_canvas_t *canvas = (yeah_canvas_t *)app->userData;
+  //waah_canvas_t *canvas = (waah_canvas_t *)app->userData;
   app_t *app = (app_t *)user_data->app;
   android_app_t *android_app = (android_app_t *)user_data->app;
   mrb_state *mrb = (mrb_state *)user_data->mrb;
@@ -260,7 +260,7 @@ static void
 _app_run_android(mrb_state *mrb, mrb_value mrb_app, android_app_t *android_app) {
 
   app_t *app = (app_t *) android_app;
-  yeah_canvas_t *canvas = (yeah_canvas_t *) app;
+  waah_canvas_t *canvas = (waah_canvas_t *) app;
 
   LOGI("run_android");
   display_t *display = &app->display;
@@ -459,26 +459,26 @@ android_raw_asset_fopen(const char *filename) {
 }
 
 static int 
-load_png_from_asset(mrb_state *mrb, yeah_image_t *image, const char *filename) {
+load_png_from_asset(mrb_state *mrb, waah_image_t *image, const char *filename) {
   long len;
   unsigned char *buffer = android_asset_read(filename, &len);
 
-  return _yeah_load_png_from_buffer(mrb, image, buffer, len);
+  return _waah_load_png_from_buffer(mrb, image, buffer, len);
 }
 
 static int
-load_jpeg_from_asset(mrb_state *mrb, yeah_image_t *image, const char *filename) {
+load_jpeg_from_asset(mrb_state *mrb, waah_image_t *image, const char *filename) {
   LOGI("opening file: %s", filename);
   FILE *file = android_raw_asset_fopen(filename);
   LOGI("opened file: %p", file);
 
-  return _yeah_load_jpeg_from_file(mrb, image, file);
+  return _waah_load_jpeg_from_file(mrb, image, file);
 }
 
 
 static mrb_value
 image_load_asset(mrb_state *mrb, mrb_value self) {
-  return _yeah_image_load(mrb, self, load_png_from_asset, load_jpeg_from_asset);
+  return _waah_image_load(mrb, self, load_png_from_asset, load_jpeg_from_asset);
 }
 
 

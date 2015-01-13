@@ -29,7 +29,7 @@ typedef struct display_s {
 
 #define N_POINTERS 10
 typedef struct app_s {
-  yeah_canvas_t base;
+  waah_canvas_t base;
   unsigned long time;
   keyboard_t *keyboard;
   mrb_value mrb_keyboard;
@@ -63,8 +63,8 @@ app_free(mrb_state *mrb, void *ptr) {
 
 static struct mrb_data_type _pointer_type_info = {"Pointer", pointer_free};
 static struct mrb_data_type _keyboard_type_info = {"Keyboard", keyboard_free};
-//static struct mrb_data_type _yeah_canvas_type_info = {"App", app_free}
-extern struct mrb_data_type _yeah_canvas_type_info;
+//static struct mrb_data_type _waah_canvas_type_info = {"App", app_free}
+extern struct mrb_data_type _waah_canvas_type_info;
 
 static void
 _path_contains(cairo_t *cr, int x1, int y1, int x2, int y2, int *r1, int *r2) {
@@ -121,7 +121,7 @@ pointer_in(mrb_state *mrb, mrb_value self) {
   int r;
 
   Data_Get_Struct(mrb, self, &_pointer_type_info, pointer);
-  _path_contains(((yeah_canvas_t *)pointer->app)->cr, pointer->x, pointer->y, 0, 0, &r, NULL);
+  _path_contains(((waah_canvas_t *)pointer->app)->cr, pointer->x, pointer->y, 0, 0, &r, NULL);
 
   return r ? mrb_true_value() : mrb_false_value();
 }
@@ -150,7 +150,7 @@ keyboard_text(mrb_state *mrb, mrb_value self) {
 static mrb_value
 app_keyboard(mrb_state *mrb, mrb_value self) {
   app_t *app;
-  Data_Get_Struct(mrb, self, &_yeah_canvas_type_info, app);
+  Data_Get_Struct(mrb, self, &_waah_canvas_type_info, app);
 
   return app->mrb_keyboard;
 }
@@ -158,7 +158,7 @@ app_keyboard(mrb_state *mrb, mrb_value self) {
 static mrb_value
 app_pointer(mrb_state *mrb, mrb_value self) {
   app_t *app;
-  Data_Get_Struct(mrb, self, &_yeah_canvas_type_info, app);
+  Data_Get_Struct(mrb, self, &_waah_canvas_type_info, app);
 
   mrb_int id = 0;
   mrb_get_args(mrb, "|i", &id);

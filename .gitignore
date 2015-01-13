@@ -15,4 +15,5 @@ android/gen/
 android/local.properties
 android/.classpath
 android/.project
-
+android/assets/*.jpg
+android/assets/*png

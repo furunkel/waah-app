@@ -1,4 +1,4 @@
-package org.yeah;
+package org.waah;
 
 import android.app.Activity;
 import android.app.NativeActivity;
@@ -9,7 +9,7 @@ public class MainActivity extends NativeActivity {
 	private static MainActivity instance = null;
 	
     static {
-        System.loadLibrary("yeah");
+        System.loadLibrary("waah");
      }
 	
     public static Activity getInstance() {

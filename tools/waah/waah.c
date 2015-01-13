@@ -15,9 +15,9 @@
 #include "mruby-canvas-common.h"
 
 
-#if defined(YEAH_PLATFORM_ANDROID)
+#if defined(WAAH_PLATFORM_ANDROID)
 #include "mruby-canvas-android.h"
-#elif defined(YEAH_PLATFORM_X11)
+#elif defined(WAAH_PLATFORM_X11)
 #include "mruby-canvas-x11.h"
 #else
 #error Unknown platform
@@ -27,13 +27,13 @@ static mrb_value mrb_app;
 
 static mrb_value
 app_initialize(mrb_state *mrb, mrb_value self) {
-  app_t *app = (app_t *) mrb_calloc(mrb, sizeof(YEAH_APP_STRUCT), 1);
-  yeah_canvas_t *canvas = (yeah_canvas_t *) app;
+  app_t *app = (app_t *) mrb_calloc(mrb, sizeof(WAAH_APP_STRUCT), 1);
+  waah_canvas_t *canvas = (waah_canvas_t *) app;
   mrb_int w, h;
   int i;
 
   DATA_PTR(self) = app;
-  DATA_TYPE(self) = &_yeah_canvas_type_info;
+  DATA_TYPE(self) = &_waah_canvas_type_info;
 
   mrb_get_args(mrb, "ii", &w, &h);
 
@@ -75,7 +75,7 @@ app_initialize(mrb_state *mrb, mrb_value self) {
 
 static mrb_value
 app_run(mrb_state *mrb, mrb_value self) {
-  Data_Get_Struct(mrb, self, &_yeah_canvas_type_info, app);
+  Data_Get_Struct(mrb, self, &_waah_canvas_type_info, app);
 
 #ifdef MRB_APP_PLATFORM_ANDROID
   LOGI("#run called");
@@ -98,7 +98,7 @@ static mrb_value
 app_redraw(mrb_state *mrb, mrb_value self) {
 
   app_t *app;
-  Data_Get_Struct(mrb, self, &_yeah_canvas_type_info, app);
+  Data_Get_Struct(mrb, self, &_waah_canvas_type_info, app);
 
   app->redraw = TRUE;
 
@@ -108,7 +108,7 @@ app_redraw(mrb_state *mrb, mrb_value self) {
 static mrb_value
 app_rate(mrb_state *mrb, mrb_value self) {
   app_t *app;
-  Data_Get_Struct(mrb, self, &_yeah_canvas_type_info, app);
+  Data_Get_Struct(mrb, self, &_waah_canvas_type_info, app);
 
   mrb_float rate;
   if(mrb_get_args(mrb, "|f", &rate) == 1) {
@@ -129,7 +129,7 @@ return_true_m(mrb_state *mrb, mrb_value self) {
   return mrb_true_value();
 }
 
-#ifdef YEAH_PLATFORM_ANDROID
+#ifdef WAAH_PLATFORM_ANDROID
 void android_main(struct android_app* aapp) {
     LOGE("android_main %p", aapp);
 #else
@@ -140,9 +140,9 @@ int main(int argc, char **argv) {
   FILE *file;
 
   mrb_state *mrb = mrb_open();
-  struct RClass *mYeah = mrb_module_get(mrb, "Yeah");
-  struct RClass *cCanvas = mrb_class_get_under(mrb, mYeah, "Canvas");
-  cApp = mrb_define_class_under(mrb, mYeah, "App", cCanvas);
+  struct RClass *mWaah = mrb_module_get(mrb, "Waah");
+  struct RClass *cCanvas = mrb_class_get_under(mrb, mWaah, "Canvas");
+  cApp = mrb_define_class_under(mrb, mWaah, "App", cCanvas);
   MRB_SET_INSTANCE_TT(cApp, MRB_TT_DATA);
   mrb_define_method(mrb, cApp, "initialize", app_initialize, ARGS_REQ(2));
 
@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
   mrb_define_method(mrb, cKeyboard, "pressed?", keyboard_pressed, ARGS_REQ(1));
 
 
-#ifdef YEAH_PLATFORM_ANDROID
+#ifdef WAAH_PLATFORM_ANDROID
 
   LOGI("Registered common methods...");
 
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
   mrb_alias_method(mrb, cKeyboard, mrb_intern_cstr(mrb, "visible"), mrb_intern_cstr(mrb, "show"));
   mrb_define_method(mrb, cKeyboard, "hide", keyboard_hide, ARGS_NONE());
 
-  struct RClass *cImage = mrb_class_get_under(mrb, mYeah, "Image");
+  struct RClass *cImage = mrb_class_get_under(mrb, mWaah, "Image");
   mrb_define_class_method(mrb, cImage, "asset", image_load_asset, ARGS_REQ(1));
 
   LOGI("Registered android specific methods...");
@@ -223,19 +223,19 @@ int main(int argc, char **argv) {
 
   if(app == NULL) {
     const char *msg = "No app found. Did you call App#run ?";
-#ifdef YEAH_PLATFORM_ANDROID
+#ifdef WAAH_PLATFORM_ANDROID
     LOGI(msg);
 #endif
     mrb_raise(mrb, E_RUNTIME_ERROR, msg);
   } else {
-#ifdef YEAH_PLATFORM_ANDROID
+#ifdef WAAH_PLATFORM_ANDROID
   ((android_app_t *)app)->aapp = aapp;
 #endif
   }
 
-#if defined(YEAH_PLATFORM_X11)
+#if defined(WAAH_PLATFORM_X11)
   _app_run_xlib(mrb, mrb_app, app);
-#elif defined(YEAH_PLATFORM_ANDROID)
+#elif defined(WAAH_PLATFORM_ANDROID)
   app_dummy();
   LOGI("Starting android main loop");
   _app_run_android(mrb, mrb_app, app);
@@ -251,13 +251,13 @@ int main(int argc, char **argv) {
   mrb_close(mrb);
 
 
-#ifndef YEAH_PLATFORM_ANDROID
+#ifndef WAAH_PLATFORM_ANDROID
   return 0;
 #endif
 }
 
 
-#ifdef YEAH_PLATFORM_ANDROID
+#ifdef WAAH_PLATFORM_ANDROID
 int main(int argc, char **argv) {
   app_dummy();
   ANativeActivity_onCreate(NULL, NULL, 0);

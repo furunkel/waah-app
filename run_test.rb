@@ -20,7 +20,7 @@ MRuby::Build.new do |conf|
   toolchain :clang
   conf.gembox 'full-core'
 
-  conf.gem github: 'furunkel/mruby-yeah-canvas' do |g|
+  conf.gem github: 'furunkel/mruby-waah-canvas' do |g|
     g.configure conf, :x11, false
   end
 
@@ -32,7 +32,7 @@ MRuby::CrossBuild.new('androideabi') do |conf|
   toolchain :androideabi
   conf.gembox 'full-core'
 
-  conf.gem github: 'furunkel/mruby-yeah-canvas' do |g|
+  conf.gem github: 'furunkel/mruby-waah-canvas' do |g|
     g.configure conf, :android, true
   end
 

@@ -1,5 +1,5 @@
-MRuby::Gem::Specification.new('mruby-yeah-app') do |spec|
-  spec.license = 'MIT'
+MRuby::Gem::Specification.new('mruby-waah-app') do |spec|
+  spec.license = 'MPL 2'
   spec.author  = 'furunkel'
-  spec.bins = %w(yeah)
+  spec.bins = %w(waah)
 end
