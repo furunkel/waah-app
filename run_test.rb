@@ -20,7 +20,7 @@ MRuby::Build.new do |conf|
   toolchain :clang
   conf.gembox 'full-core'
 
-  conf.gem github: 'furunkel/mruby-waah-canvas' do |g|
+  conf.gem github: 'furunkel/waah-canvas' do |g|
     g.configure conf, :x11, false
   end
 
@@ -32,10 +32,28 @@ MRuby::CrossBuild.new('androideabi') do |conf|
   toolchain :androideabi
   conf.gembox 'full-core'
 
-  conf.gem github: 'furunkel/mruby-waah-canvas' do |g|
+  conf.gem github: 'furunkel/waah-canvas' do |g|
     g.configure conf, :android, true
   end
 
   conf.gem File.expand_path(File.dirname(__FILE__)) 
 end
+
+MRuby::CrossBuild.new('win32') do |conf|
+  toolchain :gcc
+  conf.gembox 'full-core'
+
+  conf.cc.command = '/opt/mingw32/bin/i686-w64-mingw32-gcc'
+  conf.archiver.command = '/opt/mingw32/bin/i686-w64-mingw32-ar'
+  conf.linker.command = '/opt/mingw32/bin/i686-w64-mingw32-gcc'
+
+  ENV['RANLIB'] = '/opt/mingw32/bin/i686-w64-mingw32-ranlib'
+
+  conf.gem github: 'furunkel/waah-canvas' do |g|
+    g.configure conf, :windows, true
+  end
+
+  conf.gem File.expand_path(File.dirname(__FILE__)) 
+end
+
 

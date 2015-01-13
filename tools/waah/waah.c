@@ -7,23 +7,25 @@
 #include "mruby/range.h"
 #include "mruby/array.h"
 
-#include "mruby-canvas.h"
+#include "waah-canvas.h"
 
 #include <stdlib.h>
 #include <sys/time.h>
 
-#include "mruby-canvas-common.h"
+#include "waah-common.h"
 
+static mrb_value mrb_app;
 
 #if defined(WAAH_PLATFORM_ANDROID)
-#include "mruby-canvas-android.h"
+#include "waah-android.h"
 #elif defined(WAAH_PLATFORM_X11)
-#include "mruby-canvas-x11.h"
+#include "waah-x11.h"
+#elif defined(WAAH_PLATFORM_WINDOWS)
+#include "waah-windows.h"
 #else
 #error Unknown platform
 #endif
 
-static mrb_value mrb_app;
 
 static mrb_value
 app_initialize(mrb_state *mrb, mrb_value self) {
@@ -129,9 +131,18 @@ return_true_m(mrb_state *mrb, mrb_value self) {
   return mrb_true_value();
 }
 
-#ifdef WAAH_PLATFORM_ANDROID
+#if defined(WAAH_PLATFORM_ANDROID)
 void android_main(struct android_app* aapp) {
     LOGE("android_main %p", aapp);
+#elif defined(WAAH_PLATFORM_WINDOWS)
+int APIENTRY WinMain(HINSTANCE hInstance,
+                     HINSTANCE hPrevInstance,
+                     LPWSTR lpCmdLine,
+                     int nCmdShow) {
+
+  int argc;
+  char **argv = (char **) CommandLineToArgvW(lpCmdLine, &argc);
+
 #else
 int main(int argc, char **argv) {
 #endif
@@ -231,6 +242,12 @@ int main(int argc, char **argv) {
 #ifdef WAAH_PLATFORM_ANDROID
   ((android_app_t *)app)->aapp = aapp;
 #endif
+
+#ifdef WAAH_PLATFORM_WINDOWS
+  ((windows_app_t *)app)->hInstance = hInstance;
+  ((windows_app_t *)app)->nCmdShow = nCmdShow;
+#endif
+
   }
 
 #if defined(WAAH_PLATFORM_X11)
@@ -240,6 +257,8 @@ int main(int argc, char **argv) {
   LOGI("Starting android main loop");
   _app_run_android(mrb, mrb_app, app);
   LOGI("Leaving android main loop");
+#elif defined(WAAH_PLATFORM_WINDOWS)
+  _app_run_windows(mrb, mrb_app, app);
 #else
 #error No platform
 #endif
