@@ -2,6 +2,13 @@ class ExampleApp < Waah::App
   def setup
     rate 40.0
     log :verbose, "Running app" if android?
+
+    @text = ""
+    keyboard.text do |t|
+      puts t
+      #log :verbose, "text: #{t}"
+      @text << t
+    end
   end
 
   def draw
@@ -17,7 +24,7 @@ class ExampleApp < Waah::App
 
     if pointer.pressed? && pointer.in?
       color 0, 0xff, 0
-      keyboard.toggle
+      keyboard.toggle if android?
     else
       color 0xff, 0, 0
     end
@@ -25,14 +32,20 @@ class ExampleApp < Waah::App
     color 0, 0xff, 0
     stroke
 
+    font_size 20
+    text 200, 100, @text
+    color 0, 0, 0xff
+    fill
+
     redraw
   end
 end
 
-app = ExampleApp.new 100, 100
+app = ExampleApp.new 300, 300
 
 begin
   app.run
 rescue Exception => e
-  app.log :error, e.inspect
+  app.log :error, e.inspect if android?
+  puts e.inspect
 end

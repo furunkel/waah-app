@@ -4,7 +4,7 @@ struct app_s;
 typedef struct keyboard_s {
   unsigned long pressed[N_KEYS];
   unsigned long released[N_KEYS];
-  mrb_value text;
+  mrb_value text_blk;
   struct app_s *app;
 } keyboard_t;
 
@@ -144,7 +144,13 @@ static mrb_value
 keyboard_text(mrb_state *mrb, mrb_value self) {
   keyboard_t *keyboard;
   Data_Get_Struct(mrb, self, &_keyboard_type_info, keyboard);
-  return keyboard->text;
+
+  mrb_value blk;
+  mrb_get_args(mrb, "&", &blk);
+
+  return keyboard->text_blk = blk;
+
+  return self;
 }
 
 static mrb_value
@@ -167,12 +173,6 @@ app_pointer(mrb_state *mrb, mrb_value self) {
     return mrb_nil_value();
   }
   return app->mrb_pointers[id];
-}
-
-void
-app_update_keyboard_text(mrb_state *mrb, app_t *app, mrb_value text) {
-  app->keyboard->text = text;
-  mrb_iv_set(mrb, app->mrb_keyboard, mrb_intern_lit(mrb, "__text__"), text);
 }
 
 static mrb_value

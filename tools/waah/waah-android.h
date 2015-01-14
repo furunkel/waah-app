@@ -111,41 +111,43 @@ cat_key_event(mrb_state *mrb, android_app_t *app, int action, int code, int meta
   jint res;
   JNIEnv *env;
   JavaVM *vm = app->aapp->activity->vm;
+  keyboard_t *kb = ((app_t *)app)->keyboard;
 
-  res = (*vm)->AttachCurrentThread(vm, &env, NULL);
-  if (res == JNI_ERR) {
-      return;
+  if(!mrb_nil_p(kb->text_blk)) {
+    res = (*vm)->AttachCurrentThread(vm, &env, NULL);
+    if (res == JNI_ERR) {
+        return;
+    }
+
+    jclass activityClass = (*env)->FindClass(env, "android/app/NativeActivity");
+    jmethodID getClassLoader = (*env)->GetMethodID(env, activityClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
+    jobject clazz = (*env)->CallObjectMethod(env, app->aapp->activity->clazz, getClassLoader);
+    jclass classLoader = (*env)->FindClass(env, "java/lang/ClassLoader");
+    jmethodID findClass = (*env)->GetMethodID(env, classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+    jstring strClassName = (*env)->NewStringUTF(env, "org/waah/Keyboard");
+    jclass keyboard = (jclass)(*env)->CallObjectMethod(env, clazz, findClass, strClassName); 
+    LOGI("Keyboard class (%p)", keyboard);
+    jmethodID keyboard_method = (*env)->GetStaticMethodID(env, keyboard, "getBuffer", "()[B");
+    LOGI("Getting buffer...(%p)", keyboard_method);
+    jbyteArray buffer = (jbyteArray) (*env)->CallStaticObjectMethod(env, keyboard, keyboard_method, action, code, meta_state);
+
+    jboolean is_copy;
+    jint len;
+
+    LOGI("Got buffer: %p", buffer);
+    if(buffer != NULL) {
+      len = (*env)->GetArrayLength(env, buffer);
+      LOGI("Got buffer len: %d", len);
+      if(len > 0) {
+        jbyte *cbuffer = (*env)->GetByteArrayElements(env, buffer, &is_copy);
+        LOGI("Got cbuffer: %s", cbuffer);
+        mrb_value str = mrb_str_new(mrb, cbuffer, len);
+        mrb_funcall(mrb, kb->text_blk, "call", 1, str);
+        (*env)->ReleaseByteArrayElements(env, buffer, cbuffer, JNI_ABORT);
+      }
+    }
+    (*vm)->DetachCurrentThread(vm);
   }
-
-  jclass activityClass = (*env)->FindClass(env, "android/app/NativeActivity");
-  jmethodID getClassLoader = (*env)->GetMethodID(env, activityClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
-  jobject clazz = (*env)->CallObjectMethod(env, app->aapp->activity->clazz, getClassLoader);
-  jclass classLoader = (*env)->FindClass(env, "java/lang/ClassLoader");
-  jmethodID findClass = (*env)->GetMethodID(env, classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-  jstring strClassName = (*env)->NewStringUTF(env, "org/mruby/canvas/Keyboard");
-  jclass keyboard = (jclass)(*env)->CallObjectMethod(env, clazz, findClass, strClassName); 
-  LOGI("Keyboard class (%p)", keyboard);
-  jmethodID keyboard_method = (*env)->GetStaticMethodID(env, keyboard, "getBuffer", "()[B");
-  LOGI("Getting buffer...(%p)", keyboard_method);
-  jbyteArray buffer = (jbyteArray) (*env)->CallStaticObjectMethod(env, keyboard, keyboard_method, action, code, meta_state);
-
-  jboolean is_copy;
-  jint len;
-
-  LOGI("Got buffer: %p", buffer);
-  if(buffer != NULL) {
-    len = (*env)->GetArrayLength(env, buffer);
-    LOGI("Got buffer len: %d", len);
-    jbyte *cbuffer = (*env)->GetByteArrayElements(env, buffer, &is_copy);
-    LOGI("Got cbuffer: %s", cbuffer);
-    mrb_str_cat(mrb, ((app_t *)app)->keyboard->text, cbuffer, len);
-
-    LOGI("Catting...");
-    (*env)->ReleaseByteArrayElements(env, buffer, cbuffer, JNI_ABORT);
-  }
-
-  (*vm)->DetachCurrentThread(vm);
-
   LOGI("Done...");
 }
 
@@ -169,7 +171,7 @@ show_keyboard(android_app_t *app, int show) {
   jobject clazz = (*env)->CallObjectMethod(env, app->aapp->activity->clazz, getClassLoader);
   jclass classLoader = (*env)->FindClass(env, "java/lang/ClassLoader");
   jmethodID findClass = (*env)->GetMethodID(env, classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-  jstring strClassName = (*env)->NewStringUTF(env, "org/mruby/canvas/Keyboard");
+  jstring strClassName = (*env)->NewStringUTF(env, "org/waah/Keyboard");
   jclass keyboard = (jclass)(*env)->CallObjectMethod(env, clazz, findClass, strClassName); 
   LOGI("Keyboard class: %p", keyboard);
 
@@ -300,23 +302,7 @@ _app_run_android(mrb_state *mrb, mrb_value mrb_app, android_app_t *android_app) 
       android_app->event.key_code,
       android_app->event.meta_state);
 
-      
-
-      switch (android_app->event.key_code) {
-        case AKEYCODE_DEL: {
-          LOGI("Have current text: %s", mrb_string_value_ptr(mrb, app->keyboard->text));
-          mrb_value range = mrb_range_new(mrb, mrb_fixnum_value(0), mrb_fixnum_value(-1), TRUE);
-          mrb_value new_text = mrb_funcall(mrb, app->keyboard->text, "[]", 1, range);
-          LOGI("Have new text: %s", mrb_string_value_ptr(mrb, new_text));
-          app_update_keyboard_text(mrb, app, new_text);
-          break;
-        }
-        case AKEYCODE_CLEAR:
-          mrb_funcall(mrb, app->keyboard->text, "clear", 0, NULL);
-          break;
-        default:
-          cat_key_event(mrb, android_app, android_app->event.action, android_app->event.key_code, android_app->event.meta_state);
-      }
+      cat_key_event(mrb, android_app, android_app->event.action, android_app->event.key_code, android_app->event.meta_state);
     }
 
     while ((ident=ALooper_pollAll(app->redraw ? 0 : -1, NULL, &events, (void**)&source)) >= 0) {

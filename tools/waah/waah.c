@@ -47,13 +47,12 @@ app_initialize(mrb_state *mrb, mrb_value self) {
 
   mrb_value mrb_keyboard = mrb_class_new_instance(mrb, 0, NULL, cKeyboard);
   keyboard_t *keyboard = (keyboard_t *) mrb_calloc(mrb, sizeof(keyboard_t), 1);
+  keyboard->text_blk = mrb_nil_value();
   app->keyboard = keyboard;
   keyboard->app = app;
   app->mrb_keyboard = mrb_keyboard;
   DATA_PTR(mrb_keyboard) = keyboard;
   DATA_TYPE(mrb_keyboard) = &_keyboard_type_info;
-
-  app_update_keyboard_text(mrb, app, mrb_str_buf_new(mrb, 32));
 
   mrb_value mrb_pointers = mrb_ary_new_capa(mrb, N_POINTERS);
   for(i = 0; i < N_POINTERS; i++) {
@@ -137,11 +136,20 @@ void android_main(struct android_app* aapp) {
 #elif defined(WAAH_PLATFORM_WINDOWS)
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
-                     LPWSTR lpCmdLine,
+                     LPSTR lpCmdLine,
                      int nCmdShow) {
 
   int argc;
-  char **argv = (char **) CommandLineToArgvW(lpCmdLine, &argc);
+  wchar_t* wCmdLine = GetCommandLineW();
+  wchar_t** wArgv = CommandLineToArgvW(wCmdLine, &argc);
+  char** argv = calloc(sizeof(char), argc);
+  int i;
+  for(i = 0; i < argc; i++) {
+    int len = WideCharToMultiByte(CP_UTF8, 0, wArgv[i], -1, NULL, 0, NULL, NULL);
+    argv[i] = malloc(sizeof(char) * len);
+    WideCharToMultiByte(CP_UTF8, 0, wArgv[i], -1, argv[i], len, NULL, NULL);
+  }
+  LocalFree(wArgv);
 
 #else
 int main(int argc, char **argv) {
@@ -177,7 +185,7 @@ int main(int argc, char **argv) {
   mrb_define_method(mrb, cPointer, "x", pointer_x, ARGS_NONE());
   mrb_define_method(mrb, cPointer, "y", pointer_y, ARGS_NONE());
 
-  mrb_define_method(mrb, cKeyboard, "text", keyboard_text, ARGS_NONE());
+  mrb_define_method(mrb, cKeyboard, "text", keyboard_text, ARGS_BLOCK());
   mrb_define_method(mrb, cKeyboard, "down?", keyboard_down, ARGS_REQ(1));
   mrb_define_method(mrb, cKeyboard, "pressed?", keyboard_pressed, ARGS_REQ(1));
 

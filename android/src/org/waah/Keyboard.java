@@ -24,16 +24,22 @@ public class Keyboard {
         if(imm != null) {
         	View view = activity.getWindow().getDecorView();
         	if(visible) {
-        		EditText e = new EditText(activity);
-        		activity.setContentView(e);
-        		e.setInputType(InputType.TYPE_CLASS_NUMBER);
-        		imm.showSoftInput(e, 0);
+        		imm.showSoftInput(view, 0);
         	} else {
 	        	imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         	}
         	return true;
         }
         return false;
+	}
+	
+	// Adapted version
+	// of http://stackoverflow.com/questions/220547/printable-char-in-java
+	static public boolean isPrintableChar(int c ) {
+	    Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
+	    return (!Character.isISOControl(c)) &&
+	            block != null &&
+	            block != Character.UnicodeBlock.SPECIALS;
 	}
 	
 	static public boolean dispatchKeyEvent(KeyEvent event) {
@@ -54,6 +60,12 @@ public class Keyboard {
 		if(str == null) {
 			str = "";
 		}
+		
+		int firstCodePoint = str.codePointAt(0);
+		if(!isPrintableChar(firstCodePoint)) {
+			str = "";
+		}
+		
 		try {
 			buffer = str.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
