@@ -33,17 +33,27 @@ app_initialize(mrb_state *mrb, mrb_value self) {
   waah_canvas_t *canvas = (waah_canvas_t *) app;
   mrb_int w, h;
   int i;
+  size_t title_len;
+  char *title = NULL;
 
   DATA_PTR(self) = app;
   DATA_TYPE(self) = &_waah_canvas_type_info;
 
-  mrb_get_args(mrb, "ii", &w, &h);
+  mrb_get_args(mrb, "ii|s", &w, &h, &title, &title_len);
 
   app->redraw = TRUE;
   app->rate = 1.0;
 
+  if(title == NULL) {
+    title = "Waah";
+    title_len = strlen(title);
+  }
+  app->title = mrb_calloc(mrb, sizeof(char), title_len + 1);
+  memcpy(app->title, title, title_len);
+
   canvas->width = w;
   canvas->height = h;
+  canvas->free_func = app_free;
 
   mrb_value mrb_keyboard = mrb_class_new_instance(mrb, 0, NULL, cKeyboard);
   keyboard_t *keyboard = (keyboard_t *) mrb_calloc(mrb, sizeof(keyboard_t), 1);
@@ -163,7 +173,7 @@ int main(int argc, char **argv) {
   struct RClass *cCanvas = mrb_class_get_under(mrb, mWaah, "Canvas");
   cApp = mrb_define_class_under(mrb, mWaah, "App", cCanvas);
   MRB_SET_INSTANCE_TT(cApp, MRB_TT_DATA);
-  mrb_define_method(mrb, cApp, "initialize", app_initialize, ARGS_REQ(2));
+  mrb_define_method(mrb, cApp, "initialize", app_initialize, ARGS_REQ(2) | ARGS_OPT(1));
 
   cPointer = mrb_define_class_under(mrb, cApp, "Pointer", mrb->object_class);
   MRB_SET_INSTANCE_TT(cPointer, MRB_TT_DATA);

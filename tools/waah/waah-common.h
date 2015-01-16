@@ -40,6 +40,7 @@ typedef struct app_s {
   unsigned int redraw : 1;
   unsigned long long last_redraw;
   double rate;
+  char *title;
 } app_t;
 
 struct RClass *cKeyboard;
@@ -58,7 +59,10 @@ keyboard_free(mrb_state *mrb, void *ptr) {
 
 static void
 app_free(mrb_state *mrb, void *ptr) {
-  mrb_free(mrb, ptr);
+  app_t *app = (app_t *) ptr;
+  if(app->title != NULL) {
+    mrb_free(mrb, app->title);
+  }
 }
 
 static struct mrb_data_type _pointer_type_info = {"Pointer", pointer_free};

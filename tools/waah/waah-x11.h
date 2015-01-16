@@ -42,6 +42,9 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
                        ButtonPressMask  |
                        ButtonReleaseMask |
                        PointerMotionMask);
+
+  XStoreName(dpy, w, app->title);
+
   XMapWindow(dpy, w);
 
   display->surface = cairo_xlib_surface_create(dpy, w,

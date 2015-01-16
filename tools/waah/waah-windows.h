@@ -203,7 +203,7 @@ _app_run_windows(mrb_state *mrb, mrb_value mrb_app, windows_app_t *windows_app) 
   window_instance win;
   init_window_classex(&windowClass, &win, windows_app->hInstance, WndProc, "AClass");
   if (!RegisterClassEx(&windowClass)) return;
-  win.title = "Waah";
+  win.title = app->title;
   if (!create_window(&win, canvas->width, canvas->height)) return;
 
   windows_app->mrb = mrb;

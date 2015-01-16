@@ -41,7 +41,7 @@ class ExampleApp < Waah::App
   end
 end
 
-app = ExampleApp.new 300, 300
+app = ExampleApp.new 300, 300, "Example App"
 
 begin
   app.run
