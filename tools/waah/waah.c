@@ -203,6 +203,8 @@ int main(int argc, char **argv) {
   struct RClass *cImage = mrb_class_get_under(mrb, mWaah, "Image");
   mrb_define_class_method(mrb, cImage, "asset", image_load_asset, ARGS_REQ(1));
 
+  struct RClass *cFont = mrb_class_get_under(mrb, mWaah, "Font");
+  mrb_define_class_method(mrb, cFont, "asset", font_load_asset, ARGS_REQ(1));
   LOGI("Registered android specific methods...");
 
   AAssetManager* mgr = aapp->activity->assetManager;

@@ -469,5 +469,24 @@ image_load_asset(mrb_state *mrb, mrb_value self) {
 
 
 
+mrb_value font_new(mrb_state *mrb, waah_font_t **rfont);
+
+static mrb_value
+font_load_asset(mrb_state *mrb, mrb_value self) {
+  char *filename;
+  waah_font_t *font;
+  mrb_value mrb_font = font_new(mrb, &font);
+  mrb_get_args(mrb, "z", &filename);
+  long len;
+  unsigned char *buffer = android_asset_read(filename, &len);
+
+  if(!_waah_font_load_from_buffer(mrb, font, buffer, len)) {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "font loading failed");
+    return mrb_nil_value();
+  } else {
+    return mrb_font;
+  }
+}
+
 
 #include <native_app_glue/android_native_app_glue.c>
