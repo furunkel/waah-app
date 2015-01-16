@@ -138,11 +138,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
     break;
   case WM_EXITSIZEMOVE:
-    InvalidateRect(hWnd, NULL, NULL); 
     break;
   case WM_CHAR: {
     wchar_t str[2];
     int wlen;
+
+    // handles surrogates
+    // see http://unicodebook.readthedocs.org/en/latest/unicode_encodings.html#utf-16-surrogate-pairs for the ranges
+
+    // low surrogate
     if(wParam >= 0xDC00 && wParam <= 0xDFFF) {
       str[0] = app->last_char;
       str[1] = wParam;
@@ -153,15 +157,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     app->last_char = wParam;
 
-    int len = WideCharToMultiByte(CP_UTF8, 0, str, wlen, NULL, 0, NULL, NULL);
-    char *utf8 = malloc(sizeof(char) * len);
-    WideCharToMultiByte(CP_UTF8, 0, str, wlen, utf8, len, NULL, NULL);
+    // if not a high surrogate
+    if(!(wParam >= 0xD800 && wParam <= 0xDBFF)) {
+      int len = WideCharToMultiByte(CP_UTF8, 0, str, wlen, NULL, 0, NULL, NULL);
+      char *utf8 = malloc(sizeof(char) * len);
+      WideCharToMultiByte(CP_UTF8, 0, str, wlen, utf8, len, NULL, NULL);
 
-    if(!mrb_nil_p(keyboard->text_blk)) {
-      mrb_value mrb_str = mrb_str_new(app->mrb, utf8, len);
-      mrb_funcall(app->mrb, keyboard->text_blk, "call", 1, mrb_str);
+      if(!mrb_nil_p(keyboard->text_blk)) {
+        mrb_value mrb_str = mrb_str_new(app->mrb, utf8, len);
+        mrb_funcall(app->mrb, keyboard->text_blk, "call", 1, mrb_str);
+      }
+      free(utf8);
     }
-    free(utf8);
     break;
   }
   case WM_KEYDOWN:
