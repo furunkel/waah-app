@@ -110,7 +110,6 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
 
           case MotionNotify: {
             XMotionEvent *ev = (XMotionEvent *) &e;
-            app->time = ev->time;
             mouse->prev_x = mouse->x;
             mouse->prev_y = mouse->y;
             mouse->x = ev->x;
@@ -119,21 +118,19 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
           }
           case ButtonPress: {
             XButtonPressedEvent *ev = (XButtonPressedEvent *) &e;
-            app->time = ev->time;
             mouse->x = ev->x;
             mouse->y = ev->y;
             if(ev->button < N_BUTTONS) {
-              mouse->pressed[ev->button] = ev->time;
+              mouse->pressed[ev->button] = app->time;
             }
             break;
           }
           case ButtonRelease: {
             XButtonReleasedEvent *ev = (XButtonReleasedEvent *) &e;
-            app->time = ev->time;
             mouse->x = ev->x;
             mouse->y = ev->y;
             if(ev->button < N_BUTTONS) {
-              mouse->released[ev->button] = ev->time;
+              mouse->released[ev->button] = app->time;
             }
             break;
           }
@@ -157,9 +154,8 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
 
           case KeyPress: {
             XKeyPressedEvent *ev = (XKeyPressedEvent *) &e;
-            app->time = ev->time;
             if(ev->keycode < N_KEYS) {
-              keyboard->pressed[ev->keycode] = ev->time;
+              keyboard->pressed[ev->keycode] = app->time;
             }
 
             if(!mrb_nil_p(keyboard->text_blk)) {
@@ -181,9 +177,8 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
           }
           case KeyRelease: {
             XKeyReleasedEvent *ev = (XKeyReleasedEvent *) &e;
-            app->time = ev->time;
             if(ev->keycode < N_KEYS) {
-              keyboard->released[ev->keycode] = ev->time;
+              keyboard->released[ev->keycode] = app->time;
             }
             break;
           }
@@ -204,6 +199,8 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
         canvas->cr = cairo_create(display->surface2);
         mrb_funcall(mrb, mrb_app, "draw", 0, NULL);
         cairo_destroy(canvas->cr);
+
+        ++app->time;
 
         cairo_set_source_surface(cr, display->surface2, 0, 0);
         cairo_paint(cr);

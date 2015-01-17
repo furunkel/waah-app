@@ -25,7 +25,7 @@ class ExampleApp < Waah::App
 
     if pointer.pressed? && pointer.in?
       color 0, 0xff, 0
-      keyboard.toggle if android?
+      keyboard.toggle
     else
       color 0xff, 0, 0
     end
