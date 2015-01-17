@@ -99,41 +99,15 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
       XEvent e;
       while(XPending(dpy)) XNextEvent(dpy, &e);
 
-      if(XFilterEvent(&e, w)) {
-        switch (e.type) {
+      if(XFilterEvent(&e, w)) {     
+        switch(e.type) {
+        }
+      } else {
+        switch(e.type) {
           case MapNotify:
           case Expose:
             break;
-          case ConfigureNotify: {
-            XConfigureEvent *ev = (XConfigureEvent *) &e;
-            if(ev->width != window_width ||
-              ev->height != window_height) {
 
-                window_width = ev->width;
-                window_height = ev->height;
-
-                cairo_surface_destroy(display->surface2);
-                display->surface2 = cairo_surface_create_similar(display->surface, CAIRO_CONTENT_COLOR_ALPHA, window_width, window_height);
-                cairo_xlib_surface_set_size(display->surface, window_width, window_height);
-            }
-            break;
-          }
-          case KeyPress: {
-            XKeyPressedEvent *ev = (XKeyPressedEvent *) &e;
-            app->time = ev->time;
-            if(ev->keycode < N_KEYS) {
-              keyboard->pressed[ev->keycode] = ev->time;
-            }
-            break;
-          }
-          case KeyRelease: {
-            XKeyReleasedEvent *ev = (XKeyReleasedEvent *) &e;
-            app->time = ev->time;
-            if(ev->keycode < N_KEYS) {
-              keyboard->released[ev->keycode] = ev->time;
-            }
-            break;
-          }
           case MotionNotify: {
             XMotionEvent *ev = (XMotionEvent *) &e;
             app->time = ev->time;
@@ -166,10 +140,28 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
           case KeymapNotify:
             XRefreshKeyboardMapping(&e.xmapping);
             break;
-        }
-      } else {
-        switch(e.type) {
+          case ConfigureNotify: {
+            XConfigureEvent *ev = (XConfigureEvent *) &e;
+            if(ev->width != window_width ||
+              ev->height != window_height) {
+
+                window_width = ev->width;
+                window_height = ev->height;
+
+                cairo_surface_destroy(display->surface2);
+                display->surface2 = cairo_surface_create_similar(display->surface, CAIRO_CONTENT_COLOR_ALPHA, window_width, window_height);
+                cairo_xlib_surface_set_size(display->surface, window_width, window_height);
+            }
+            break;
+          }
+
           case KeyPress: {
+            XKeyPressedEvent *ev = (XKeyPressedEvent *) &e;
+            app->time = ev->time;
+            if(ev->keycode < N_KEYS) {
+              keyboard->pressed[ev->keycode] = ev->time;
+            }
+
             if(!mrb_nil_p(keyboard->text_blk)) {
               int len;
               KeySym sym;
@@ -187,6 +179,15 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
               }
             }
           }
+          case KeyRelease: {
+            XKeyReleasedEvent *ev = (XKeyReleasedEvent *) &e;
+            app->time = ev->time;
+            if(ev->keycode < N_KEYS) {
+              keyboard->released[ev->keycode] = ev->time;
+            }
+            break;
+          }
+
         }
       }
 
