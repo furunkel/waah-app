@@ -1,12 +1,13 @@
 class ExampleApp < Waah::App
   def setup
-    rate 40.0
-    log :verbose, "Running app" if android?
+    rate 10.0
+    log_level :verbose
+
+    log :verbose, "Running app"
 
     @text = ""
     keyboard.text do |t|
-      puts t
-      #log :verbose, "text: #{t}"
+      log :verbose, "texttt: #{t}"
       @text << t
     end
   end
@@ -41,11 +42,10 @@ class ExampleApp < Waah::App
   end
 end
 
-app = ExampleApp.new 300, 300, "Example App"
+app = ExampleApp.new 500, 500, "Example App"
 
 begin
   app.run
 rescue Exception => e
-  app.log :error, e.inspect if android?
-  puts e.inspect
+  app.log :error, e.inspect
 end

@@ -77,7 +77,7 @@ keyboard_toggle(mrb_state *mrb, mrb_value self) {
 }
 
 static mrb_value
-app_log(mrb_state *mrb, mrb_value self) {
+app_log_android(mrb_state *mrb, mrb_value self) {
 
   mrb_sym level;
   char *msg;
@@ -88,21 +88,22 @@ app_log(mrb_state *mrb, mrb_value self) {
     tag = "waah";
   }
 
-  if(level == mrb_intern_lit(mrb, "warn")) {
-    __android_log_print(ANDROID_LOG_WARN, tag, "%s", msg);
-  } else if(level == mrb_intern_lit(mrb, "error")) {
-    __android_log_print(ANDROID_LOG_ERROR, tag, "%s", msg);
-  } else if(level == mrb_intern_lit(mrb, "verbose")) {
+  if(level == mrb_intern_lit(mrb, "verbose")) {
     __android_log_print(ANDROID_LOG_VERBOSE, tag, "%s", msg);
   } else if(level == mrb_intern_lit(mrb, "debug")) {
     __android_log_print(ANDROID_LOG_DEBUG, tag, "%s", msg);
   } else if(level == mrb_intern_lit(mrb, "info")) {
     __android_log_print(ANDROID_LOG_INFO, tag, "%s", msg);
+  } else if(level == mrb_intern_lit(mrb, "warn")) {
+    __android_log_print(ANDROID_LOG_WARN, tag, "%s", msg);
+  } else if(level == mrb_intern_lit(mrb, "error")) {
+    __android_log_print(ANDROID_LOG_ERROR, tag, "%s", msg);
   } else if(level == mrb_intern_lit(mrb, "fatal")) {
     __android_log_print(ANDROID_LOG_FATAL, tag, "%s", msg);
   } else {
     mrb_raise(mrb, E_ARGUMENT_ERROR, "invalid log level");
   }
+
   return self;
 }
 

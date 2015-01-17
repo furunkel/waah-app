@@ -182,10 +182,6 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
                 // Overflow is unlikely, but could screw up string
                 fprintf(stderr, "Received XBufferOverflow\n");
               } else {
-                if(len > 0) {
-                  printf("text: %.*s\n", len, buffer);
-                }
-
                 mrb_value mrb_str = mrb_str_new(mrb, buffer, len);
                 mrb_funcall(mrb, keyboard->text_blk, "call", 1, mrb_str);
               }

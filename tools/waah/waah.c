@@ -26,6 +26,143 @@ static mrb_value mrb_app;
 #error Unknown platform
 #endif
 
+typedef enum {
+  WAAH_LOG_LEVEL_VERBOSE,
+  WAAH_LOG_LEVEL_DEBUG,
+  WAAH_LOG_LEVEL_INFO,
+  WAAH_LOG_LEVEL_WARN,
+  WAAH_LOG_LEVEL_ERROR,
+  WAAH_LOG_LEVEL_FATAL,
+  WAAH_LOG_LEVEL_UNKNOWN,
+  WAAH_N_LOG_LEVELS
+} waah_log_level_t;
+
+waah_log_level_t _waah_log_level = WAAH_LOG_LEVEL_WARN;
+
+static const char *const log_levels[WAAH_N_LOG_LEVELS] = {
+  "VERBOSE",
+  "DEBUG",
+  "INFO",
+  "WARN",
+  "ERROR",
+  "FATAL",
+  "UNKNOWN"
+};
+
+static const char *const log_levels_lc[WAAH_N_LOG_LEVELS] = {
+  "verbose",
+  "debug",
+  "info",
+  "warn",
+  "error",
+  "fatal",
+  "unknown"
+};
+
+
+#define waah_info(format, ...) waah_log(WAAH_LOG_LEVEL_INFO, _waah_log_tag, format, ##__VA_ARGS__)
+#define waah_warn(format, ...) waah_log(WAAH_LOG_LEVEL_WARN, _waah_log_tag, format, ##__VA_ARGS__)
+#define waah_error(format, ...) waah_log(WAAH_LOG_LEVEL_ERROR, _waah_log_tag, format, ##__VA_ARGS__)
+#define waah_fatal(format, ...) waah_log(WAAH_LOG_LEVEL_FATAL, _waah_log_tag, format, ##__VA_ARGS__)
+
+void
+waah_log(waah_log_level_t level, const char *tag, const char *format, ...)
+{
+  if(level < _waah_log_level) return;
+
+  va_list args;
+
+  const char *prefix = "waah:";
+  const char *sep1 = ":";
+  const char *sep2 = ": ";
+
+  size_t prefix_len = strlen(prefix);
+  size_t level_len = strlen(log_levels[level]);
+  size_t tag_len = strlen(tag);
+  size_t sep1_len = strlen(sep1);
+  size_t sep2_len = strlen(sep2);
+  size_t format_len = strlen(format);
+
+  char full_format[prefix_len
+                   + level_len
+                   + sep1_len
+                   + tag_len
+                   + sep2_len
+                   + format_len
+                   + 2];
+
+  size_t i = 0;
+  memcpy(full_format + i, prefix, prefix_len); i += prefix_len;
+  memcpy(full_format + i, log_levels[level], level_len); i += level_len;
+  memcpy(full_format + i, sep1, sep1_len); i += sep1_len;
+  memcpy(full_format + i, tag, tag_len); i += tag_len;
+  memcpy(full_format + i, sep2, sep2_len); i += sep2_len;
+  memcpy(full_format + i, format, format_len); i += format_len;
+  full_format[i] = '\n'; i++;
+  full_format[i] = '\0'; i++;
+
+  va_start(args, format);
+  vfprintf(stderr, full_format, args);
+  va_end(args);
+}
+
+
+static mrb_value
+app_log_stderr(mrb_state *mrb, mrb_value self) {
+  mrb_sym level;
+  char *msg;
+  char *tag = NULL;
+  mrb_get_args(mrb, "nz|z", &level, &msg, &tag);
+
+  if(tag == NULL) {
+    tag = ((app_t *)app)->title;
+  }
+
+  if(level == mrb_intern_lit(mrb, "verbose")) {
+    waah_log(WAAH_LOG_LEVEL_VERBOSE, tag, "%s", msg);
+  } else if(level == mrb_intern_lit(mrb, "debug")) {
+    waah_log(WAAH_LOG_LEVEL_DEBUG, tag, "%s", msg);
+  } else if(level == mrb_intern_lit(mrb, "info")) {
+    waah_log(WAAH_LOG_LEVEL_INFO, tag, "%s", msg);
+  } else if(level == mrb_intern_lit(mrb, "warn")) {
+    waah_log(WAAH_LOG_LEVEL_WARN, tag, "%s", msg);
+  } else if(level == mrb_intern_lit(mrb, "error")) {
+    waah_log(WAAH_LOG_LEVEL_ERROR, tag, "%s", msg);
+  } else if(level == mrb_intern_lit(mrb, "fatal")) {
+    waah_log(WAAH_LOG_LEVEL_FATAL, tag, "%s", msg);
+  } else {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "invalid log level");
+  }
+
+  return self;
+}
+
+static mrb_value
+app_log_level(mrb_state *mrb, mrb_value self) {
+  mrb_sym level;
+
+  if(mrb_get_args(mrb, "|n", &level) > 0) {
+    if(level == mrb_intern_lit(mrb, "verbose")) {
+      _waah_log_level = WAAH_LOG_LEVEL_VERBOSE;
+    } else if(level == mrb_intern_lit(mrb, "debug")) {
+      _waah_log_level = WAAH_LOG_LEVEL_DEBUG;
+    } else if(level == mrb_intern_lit(mrb, "info")) {
+      _waah_log_level = WAAH_LOG_LEVEL_INFO;
+    } else if(level == mrb_intern_lit(mrb, "warn")) {
+      _waah_log_level = WAAH_LOG_LEVEL_WARN;
+    } else if(level == mrb_intern_lit(mrb, "error")) {
+      _waah_log_level = WAAH_LOG_LEVEL_ERROR;
+    } else if(level == mrb_intern_lit(mrb, "fatal")) {
+      _waah_log_level = WAAH_LOG_LEVEL_FATAL;
+    } else {
+      mrb_raise(mrb, E_ARGUMENT_ERROR, "invalid log level");
+    }
+  } 
+
+  return mrb_symbol_value(mrb_intern_cstr(mrb, log_levels_lc[_waah_log_level]));
+}
+
+
 
 static mrb_value
 app_initialize(mrb_state *mrb, mrb_value self) {
@@ -143,9 +280,20 @@ return_false_m(mrb_state *mrb, mrb_value self) {
 }
 
 static mrb_value
+return_nil_m(mrb_state *mrb, mrb_value self) {
+  return mrb_nil_value();
+}
+
+static mrb_value
 return_true_m(mrb_state *mrb, mrb_value self) {
   return mrb_true_value();
 }
+
+static mrb_value
+return_self_m(mrb_state *mrb, mrb_value self) {
+  return self;
+}
+
 
 #if defined(WAAH_PLATFORM_ANDROID)
 void android_main(struct android_app* aapp) {
@@ -215,6 +363,12 @@ int main(int argc, char **argv) {
   mrb_define_method(mrb, cKeyboard, "pressed?", keyboard_pressed, ARGS_REQ(1));
 
 
+  mrb_define_method(mrb, cKeyboard, "show", return_self_m, ARGS_OPT(1));
+  mrb_define_method(mrb, cKeyboard, "toggle", return_self_m, ARGS_NONE());
+  mrb_alias_method(mrb, cKeyboard, mrb_intern_cstr(mrb, "visible"), mrb_intern_cstr(mrb, "show"));
+  mrb_define_method(mrb, cKeyboard, "hide", return_self_m, ARGS_NONE());
+
+
 #ifdef WAAH_PLATFORM_ANDROID
 
   LOGI("Registered common methods...");
@@ -251,11 +405,12 @@ int main(int argc, char **argv) {
   v = mrb_load_string(mrb, buffer);
 
   mrb_define_method(mrb, cApp, "android?", return_true_m, ARGS_NONE());
-  mrb_define_method(mrb, cApp, "log", app_log, ARGS_REQ(2) | ARGS_OPT(1));
-
+  mrb_define_method(mrb, cApp, "log", app_log_android, ARGS_REQ(2) | ARGS_OPT(1));
+  mrb_define_method(mrb, cApp, "log_level", return_nil_m, ARGS_OPT(1));
 #else
-
+  mrb_define_method(mrb, cApp, "log", app_log_stderr, ARGS_REQ(2) | ARGS_OPT(1));
   mrb_define_method(mrb, cApp, "android?", return_false_m, ARGS_NONE());
+  mrb_define_method(mrb, cApp, "log_level", app_log_level, ARGS_OPT(1));
 
   if(argc > 1) {
     filename = argv[1];
