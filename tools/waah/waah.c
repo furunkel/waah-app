@@ -32,7 +32,8 @@ app_initialize(mrb_state *mrb, mrb_value self) {
   app_t *app = (app_t *) mrb_calloc(mrb, sizeof(WAAH_APP_STRUCT), 1);
   waah_canvas_t *canvas = (waah_canvas_t *) app;
   mrb_int w, h;
-  int i;
+  mrb_value mrb_keyboard;
+  mrb_value mrb_pointers;
   size_t title_len;
   char *title = NULL;
 
@@ -55,26 +56,31 @@ app_initialize(mrb_state *mrb, mrb_value self) {
   canvas->height = h;
   canvas->free_func = app_free;
 
-  mrb_value mrb_keyboard = mrb_class_new_instance(mrb, 0, NULL, cKeyboard);
-  keyboard_t *keyboard = (keyboard_t *) mrb_calloc(mrb, sizeof(keyboard_t), 1);
-  keyboard->text_blk = mrb_nil_value();
-  app->keyboard = keyboard;
-  keyboard->app = app;
-  app->mrb_keyboard = mrb_keyboard;
-  DATA_PTR(mrb_keyboard) = keyboard;
-  DATA_TYPE(mrb_keyboard) = &_keyboard_type_info;
+  {
+    keyboard_t *keyboard = (keyboard_t *) mrb_calloc(mrb, sizeof(keyboard_t), 1);
+    mrb_keyboard = mrb_class_new_instance(mrb, 0, NULL, cKeyboard);
+    keyboard->text_blk = mrb_nil_value();
+    app->keyboard = keyboard;
+    keyboard->app = app;
+    app->mrb_keyboard = mrb_keyboard;
+    DATA_PTR(mrb_keyboard) = keyboard;
+    DATA_TYPE(mrb_keyboard) = &_keyboard_type_info;
+  }
 
-  mrb_value mrb_pointers = mrb_ary_new_capa(mrb, N_POINTERS);
-  for(i = 0; i < N_POINTERS; i++) {
-    mrb_value mrb_pointer = mrb_class_new_instance(mrb, 0, NULL, cPointer);
-    pointer_t *pointer = (pointer_t *) mrb_calloc(mrb, sizeof(pointer_t), 1);
-    pointer->id = i;
-    app->pointers[i] = pointer;
-    pointer->app = app;
-    app->mrb_pointers[i] = mrb_pointer;
-    DATA_PTR(mrb_pointer) = pointer;
-    DATA_TYPE(mrb_pointer) = &_pointer_type_info;
-    mrb_ary_push(mrb, mrb_pointers, mrb_pointer);
+  {
+    int i;
+    mrb_pointers = mrb_ary_new_capa(mrb, N_POINTERS);
+    for(i = 0; i < N_POINTERS; i++) {
+      mrb_value mrb_pointer = mrb_class_new_instance(mrb, 0, NULL, cPointer);
+      pointer_t *pointer = (pointer_t *) mrb_calloc(mrb, sizeof(pointer_t), 1);
+      pointer->id = i;
+      app->pointers[i] = pointer;
+      pointer->app = app;
+      app->mrb_pointers[i] = mrb_pointer;
+      DATA_PTR(mrb_pointer) = pointer;
+      DATA_TYPE(mrb_pointer) = &_pointer_type_info;
+      mrb_ary_push(mrb, mrb_pointers, mrb_pointer);
+    }
   }
 
   mrb_iv_set(mrb, self, mrb_intern_lit(mrb, "__pointers__"), mrb_pointers);
@@ -119,9 +125,10 @@ app_redraw(mrb_state *mrb, mrb_value self) {
 static mrb_value
 app_rate(mrb_state *mrb, mrb_value self) {
   app_t *app;
+  mrb_float rate;
+
   Data_Get_Struct(mrb, self, &_waah_canvas_type_info, app);
 
-  mrb_float rate;
   if(mrb_get_args(mrb, "|f", &rate) == 1) {
     app->rate = (double)rate;
   }
@@ -142,7 +149,9 @@ return_true_m(mrb_state *mrb, mrb_value self) {
 
 #if defined(WAAH_PLATFORM_ANDROID)
 void android_main(struct android_app* aapp) {
-    LOGE("android_main %p", aapp);
+  mrb_value v;
+  LOGE("android_main %p", aapp);
+
 #elif defined(WAAH_PLATFORM_WINDOWS)
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -150,23 +159,29 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      int nCmdShow) {
 
   int argc;
-  wchar_t* wCmdLine = GetCommandLineW();
-  wchar_t** wArgv = CommandLineToArgvW(wCmdLine, &argc);
-  char** argv = calloc(sizeof(char), argc);
-  int i;
-  for(i = 0; i < argc; i++) {
-    int len = WideCharToMultiByte(CP_UTF8, 0, wArgv[i], -1, NULL, 0, NULL, NULL);
-    argv[i] = malloc(sizeof(char) * len);
-    WideCharToMultiByte(CP_UTF8, 0, wArgv[i], -1, argv[i], len, NULL, NULL);
-  }
-  LocalFree(wArgv);
+  char** argv;
+  char* filename = NULL;
+  FILE *file;
+  mrb_value v;
 
+  {
+    int i;
+    wchar_t* wCmdLine = GetCommandLineW();
+    wchar_t** wArgv = CommandLineToArgvW(wCmdLine, &argc);
+    argv = calloc(sizeof(char), argc);
+    for(i = 0; i < argc; i++) {
+      int len = WideCharToMultiByte(CP_UTF8, 0, wArgv[i], -1, NULL, 0, NULL, NULL);
+      argv[i] = malloc(sizeof(char) * len);
+      WideCharToMultiByte(CP_UTF8, 0, wArgv[i], -1, argv[i], len, NULL, NULL);
+   }
+    LocalFree(wArgv);
+  }
 #else
 int main(int argc, char **argv) {
-#endif
   char* filename = NULL;
   mrb_value v;
   FILE *file;
+#endif
 
   mrb_state *mrb = mrb_open();
   struct RClass *mWaah = mrb_module_get(mrb, "Waah");

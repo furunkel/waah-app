@@ -147,9 +147,9 @@ pointer_y(mrb_state *mrb, mrb_value self) {
 static mrb_value
 keyboard_text(mrb_state *mrb, mrb_value self) {
   keyboard_t *keyboard;
+  mrb_value blk;
   Data_Get_Struct(mrb, self, &_keyboard_type_info, keyboard);
 
-  mrb_value blk;
   mrb_get_args(mrb, "&", &blk);
 
   return keyboard->text_blk = blk;
@@ -168,9 +168,9 @@ app_keyboard(mrb_state *mrb, mrb_value self) {
 static mrb_value
 app_pointer(mrb_state *mrb, mrb_value self) {
   app_t *app;
+  mrb_int id = 0;
   Data_Get_Struct(mrb, self, &_waah_canvas_type_info, app);
 
-  mrb_int id = 0;
   mrb_get_args(mrb, "|i", &id);
 
   if(id < 0 || id >= N_POINTERS) {

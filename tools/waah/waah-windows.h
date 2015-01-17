@@ -32,22 +32,19 @@ void init_window_classex(PWNDCLASSEX class,
                          WNDPROC WndProc,
                          LPCSTR name)
 {
-  WNDCLASSEX mine = {    // What a fucking pain in the ass.
-    // never changing:
+  WNDCLASSEX mine = {
     .cbSize = sizeof(WNDCLASSEX),
     .style = 0,
     .cbClsExtra = 0,
     .cbWndExtra = 0,
 
-    // supplied by user:
     .lpfnWndProc = WndProc,
     .hInstance = hInstance,
     .lpszClassName = name,
 
-    // sensible defaults:
     .hIcon = LoadIcon(NULL, IDI_APPLICATION),
     .hCursor = LoadCursor(NULL, IDC_ARROW),
-    .hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH),
+    .hbrBackground = NULL,
     .lpszMenuName = NULL,
     .hIconSm = LoadIcon(NULL, IDI_WINLOGO),
   };
@@ -55,7 +52,7 @@ void init_window_classex(PWNDCLASSEX class,
   *class = mine;
   win->class = class;
   win->hWnd = NULL;
-  win->title = "Anonymous coward window";  // default value
+  win->title = "Anonymous coward window";
   win->style = WS_OVERLAPPEDWINDOW;
   win->x = win->y = CW_USEDEFAULT;
 }
@@ -113,31 +110,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
   switch(msg) {
   case WM_MOUSEMOVE: 
     {
-      HDC hDC = GetDC(hWnd);
+      //HDC hDC = GetDC(hWnd);
       int x = LOWORD(lParam);
       int y = HIWORD(lParam);
       mouse->prev_x = mouse->x;
       mouse->prev_y = mouse->y;
       mouse->x = x;
       mouse->y = y;
-      ReleaseDC(hWnd, hDC);
+      //ReleaseDC(hWnd, hDC);
+      base_app->redraw = TRUE;
       break;
     }
   case WM_LBUTTONDOWN:
   case WM_RBUTTONDOWN:
     mouse->pressed[msg == WM_LBUTTONDOWN ? 1 : 2] = base_app->time;
+    base_app->redraw = TRUE;
     break;
   case WM_LBUTTONUP:
   case WM_RBUTTONUP:
     mouse->released[msg == WM_LBUTTONUP ? 1 : 2] = base_app->time;
+    base_app->redraw = TRUE;
     break;
   case WM_DESTROY:
     PostQuitMessage(0);
     break;
   case WM_TIMER:
     RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
-    break;
-  case WM_EXITSIZEMOVE:
     break;
   case WM_CHAR: {
     wchar_t str[2];
@@ -171,10 +169,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     break;
   }
+  case WM_EXITSIZEMOVE:
+    base_app->redraw = TRUE;
+    break;
   case WM_KEYDOWN:
     if(wParam < N_KEYS) {
       keyboard->pressed[wParam] = base_app->time;
     }
+    base_app->redraw = TRUE;
     break;
   case WM_KEYUP:
     if(wParam < N_KEYS) {
@@ -183,17 +185,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     break;
   case WM_PAINT: 
     {
-      PAINTSTRUCT paintStruct;
-      HDC hDC = BeginPaint(hWnd, &paintStruct);
-      canvas->surface = cairo_win32_surface_create(hDC);
-      canvas->cr = cairo_create(canvas->surface);
-      mrb_funcall(app->mrb, mrb_app, "draw", 0, NULL);
+      if(base_app->redraw) {
+        SYSTEMTIME t;
+        unsigned long ts;
+        GetSystemTime(&t);
 
-      cairo_surface_finish(canvas->surface);
-      cairo_destroy(canvas->cr);
-      cairo_surface_destroy(canvas->surface);
-      EndPaint(hWnd, &paintStruct);
-      base_app->time++;
+        // should fit in a ulong
+        ts = (t.wHour * 3600 + t.wMinute * 60  + t.wSecond) * 1000 + t.wMilliseconds;
+
+        if((ts - base_app->last_redraw) > (1.0 / base_app->rate) * 1000) {
+          PAINTSTRUCT paintStruct;
+          HDC hDC;
+
+          base_app->redraw = FALSE;
+          base_app->last_redraw = ts;
+
+          hDC = BeginPaint(hWnd, &paintStruct);
+          canvas->surface = cairo_win32_surface_create(hDC);
+          canvas->cr = cairo_create(canvas->surface);
+          mrb_funcall(app->mrb, mrb_app, "draw", 0, NULL);
+          cairo_surface_finish(canvas->surface);
+          cairo_destroy(canvas->cr);
+          cairo_surface_destroy(canvas->surface);
+          EndPaint(hWnd, &paintStruct);
+          base_app->time++;
+        }
+      }
       break;
     }
   default:
@@ -208,6 +225,7 @@ _app_run_windows(mrb_state *mrb, mrb_value mrb_app, windows_app_t *windows_app) 
   app_t *app = (app_t *) windows_app;
   WNDCLASSEX windowClass;
   window_instance win;
+  UINT interval;
   init_window_classex(&windowClass, &win, windows_app->hInstance, WndProc, "AClass");
   if (!RegisterClassEx(&windowClass)) return;
   win.title = app->title;
@@ -224,12 +242,12 @@ _app_run_windows(mrb_state *mrb, mrb_value mrb_app, windows_app_t *windows_app) 
     mrb_print_error(mrb);
   }
 
-  UINT el = (1.0 / app->rate) * 1000;
+  interval = (1.0 / app->rate) * 0.5 * 1000;
   SetTimer(win.hWnd,   // handle to main window 
     1,                 // timer identifier 
-    el,                // 10-second interval 
+    interval,                // 10-second interval 
     (TIMERPROC) NULL); // no timer callback 
 
-  return message_loop();
+  message_loop();
 }
 
