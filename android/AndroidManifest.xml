@@ -9,7 +9,7 @@
     <application
         android:label="@string/app_name" >
         <activity
-            android:name="org.waah.MainActivity"
+            android:name="org.waah.WaahActivity"
             android:label="@string/app_name" >
             
             <meta-data

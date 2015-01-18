@@ -18,8 +18,8 @@ public class Keyboard {
 	
 	static public boolean setVisible(boolean visible)
 	{
-		final Activity activity = MainActivity.getInstance();
-        InputMethodManager imm = (InputMethodManager) MainActivity.getInstance()
+		final Activity activity = WaahActivity.getInstance();
+        InputMethodManager imm = (InputMethodManager) WaahActivity.getInstance()
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
         if(imm != null) {
         	View view = activity.getWindow().getDecorView();

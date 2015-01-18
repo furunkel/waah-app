@@ -107,6 +107,53 @@ app_log_android(mrb_state *mrb, mrb_value self) {
   return self;
 }
 
+static char *
+get_file_name(struct android_app *aapp) {
+  jint res;
+  JNIEnv *env;
+  char *file_name = NULL;
+  JavaVM *vm = aapp->activity->vm;
+
+  res = (*vm)->AttachCurrentThread(vm, &env, NULL);
+  if (res == JNI_ERR) {
+      return;
+  }
+
+  jclass activityClass = (*env)->FindClass(env, "android/app/NativeActivity");
+  jmethodID getClassLoader = (*env)->GetMethodID(env, activityClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
+  jobject clazz = (*env)->CallObjectMethod(env, aapp->activity->clazz, getClassLoader);
+  jclass classLoader = (*env)->FindClass(env, "java/lang/ClassLoader");
+  jmethodID findClass = (*env)->GetMethodID(env, classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+  jstring strClassName = (*env)->NewStringUTF(env, "org/waah/WaahActivity");
+  jclass activity = (jclass)(*env)->CallObjectMethod(env, clazz, findClass, strClassName); 
+  LOGI("Activty class (%p)", activity);
+  jmethodID method = (*env)->GetStaticMethodID(env, activity, "getFileName", "()[B");
+  LOGI("Getting buffer...(%p)", method);
+  jbyteArray buffer = (jbyteArray) (*env)->CallStaticObjectMethod(env, activity, method);
+
+  jboolean is_copy;
+  jint len;
+
+  LOGI("Got buffer: %p", buffer);
+  if(buffer != NULL) {
+    len = (*env)->GetArrayLength(env, buffer);
+    file_name = (char *) malloc(len + 1);
+    LOGI("Got buffer len: %d", len);
+    if(len > 0) {
+      jbyte *cbuffer = (*env)->GetByteArrayElements(env, buffer, &is_copy);
+      LOGI("Got cbuffer: %s", cbuffer);
+      memcpy(file_name, cbuffer, len);
+      file_name[len] = 0;
+      (*env)->ReleaseByteArrayElements(env, buffer, cbuffer, JNI_ABORT);
+    }
+  }
+  (*vm)->DetachCurrentThread(vm);
+ 
+  LOGI("Done...");
+  return file_name;
+}
+
+
 static void
 cat_key_event(mrb_state *mrb, android_app_t *app, int action, int code, int meta_state) {
   jint res;

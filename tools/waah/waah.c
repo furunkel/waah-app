@@ -385,13 +385,15 @@ int main(int argc, char **argv) {
   struct RClass *cFont = mrb_class_get_under(mrb, mWaah, "Font");
   mrb_define_class_method(mrb, cFont, "asset", font_load_asset, ARGS_REQ(1));
   LOGI("Registered android specific methods...");
-
   AAssetManager* mgr = aapp->activity->assetManager;
+  LOGI("Getting file name...");
+  char *file_name = get_file_name(aapp);
+  LOGI("Looking for file %s %p", file_name, mgr);
+  AAsset* asset = AAssetManager_open(mgr, file_name, AASSET_MODE_UNKNOWN);
+  free(file_name);
 
-  LOGI("Looking for app.rb %p", mgr);
-  AAsset* asset = AAssetManager_open(mgr, "app.rb", AASSET_MODE_UNKNOWN);
   if(asset == NULL){
-    LOGE("app.rb not found in assets");
+    LOGE("%s not found in assets", file_name);
     return;
   };
 
