@@ -17,3 +17,10 @@ android/.classpath
 android/.project
 android/assets/*.jpg
 android/assets/*png
+examples/waah-android-example/bin/
+examples/waah-android-example/gen/
+examples/waah-android-example/local.properties
+examples/waah-android-example/.classpath
+examples/waah-android-example/.project
+examples/waah-android-example/assets/*.jpg
+examples/waah-android-example/assets/*png
