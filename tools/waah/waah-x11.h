@@ -199,6 +199,7 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
         canvas->cr = cairo_create(display->surface2);
         mrb_funcall(mrb, mrb_app, "draw", 0, NULL);
         cairo_destroy(canvas->cr);
+        canvas->cr = NULL;
 
         ++app->time;
 

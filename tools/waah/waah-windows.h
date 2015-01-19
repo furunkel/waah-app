@@ -206,6 +206,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
           mrb_funcall(app->mrb, mrb_app, "draw", 0, NULL);
           cairo_surface_finish(canvas->surface);
           cairo_destroy(canvas->cr);
+          canvas->cr = NULL;
           cairo_surface_destroy(canvas->surface);
           EndPaint(hWnd, &paintStruct);
           base_app->time++;

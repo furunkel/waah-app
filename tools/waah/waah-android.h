@@ -407,6 +407,7 @@ _app_run_android(mrb_state *mrb, mrb_value mrb_app, android_app_t *android_app) 
             canvas->cr = cairo_create(display->surface);
             mrb_funcall(mrb, mrb_app, "draw", 0, NULL);
             cairo_destroy(canvas->cr);
+            canvas->cr = NULL;
 
             ++app->time;
 
@@ -418,7 +419,7 @@ _app_run_android(mrb_state *mrb, mrb_value mrb_app, android_app_t *android_app) 
               b = bits[i + 2];
               bits[i] = b;
               bits[i + 2] = r;
-              bits[i + 3] = 255 / 10;
+              bits[i + 3] = 255;
             }
 
 
