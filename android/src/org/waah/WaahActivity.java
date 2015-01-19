@@ -15,7 +15,7 @@ public class WaahActivity extends NativeActivity {
 	private static WaahActivity instance = null;
 	private static final String FILE_NAME_KEY = "org.waah.file_name";
 	private static final String DEFAULT_FILE_NAME= "app.rb";
-	private static String fileName = DEFAULT_FILE_NAME;
+	private String fileName = null;
 	
     static {
         System.loadLibrary("waah");
@@ -25,7 +25,11 @@ public class WaahActivity extends NativeActivity {
     	return instance;
     }
     
-    public static byte[] getFileName() {
+    public void setFileName(String fileName) {
+    	this.fileName = fileName;
+    }
+    
+    public byte[] getFileName() {
     	try {
 			return fileName.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -43,13 +47,15 @@ public class WaahActivity extends NativeActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		instance = this;
 		
-	    ActivityInfo ai;
-		try {
-			ai = getPackageManager().getActivityInfo(getIntent().getComponent(), PackageManager.GET_META_DATA);
-			if(ai.metaData != null) {
-				fileName = ai.metaData.getString(FILE_NAME_KEY);
+		if(fileName == null) {
+			ActivityInfo ai;
+			try {
+				ai = getPackageManager().getActivityInfo(getIntent().getComponent(), PackageManager.GET_META_DATA);
+				if(ai.metaData != null) {
+					fileName = ai.metaData.getString(FILE_NAME_KEY);
+				}
+			} catch (NameNotFoundException e) {
 			}
-		} catch (NameNotFoundException e) {
 		}
 		
 		if(fileName == null || fileName.isEmpty()) {
@@ -58,7 +64,4 @@ public class WaahActivity extends NativeActivity {
 		
 		super.onCreate(savedInstanceState);
 	}
-	
-	
-	
 }

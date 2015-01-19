@@ -141,6 +141,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     wchar_t str[2];
     int wlen;
 
+    if(wParam == '\r') {
+      wParam = '\n';
+    }
+
     // handles surrogates
     // see http://unicodebook.readthedocs.org/en/latest/unicode_encodings.html#utf-16-surrogate-pairs for the ranges
 

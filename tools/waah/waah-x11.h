@@ -159,12 +159,18 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
             }
 
             if(!mrb_nil_p(keyboard->text_blk)) {
-              int len;
+              int len, i;
               KeySym sym;
               char buffer[32];
               Status status;
 
               len = Xutf8LookupString(ic, (XKeyPressedEvent*)&e, buffer, 32, &sym, &status);
+
+              for(i = 0; i < len; i++) {
+                if(buffer[i] == '\r') {
+                  buffer[i] = '\n';
+                }
+              }
 
               if(status == XBufferOverflow) {
                 // Overflow is unlikely, but could screw up string

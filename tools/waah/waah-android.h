@@ -127,9 +127,9 @@ get_file_name(struct android_app *aapp) {
   jstring strClassName = (*env)->NewStringUTF(env, "org/waah/WaahActivity");
   jclass activity = (jclass)(*env)->CallObjectMethod(env, clazz, findClass, strClassName); 
   LOGI("Activty class (%p)", activity);
-  jmethodID method = (*env)->GetStaticMethodID(env, activity, "getFileName", "()[B");
+  jmethodID method = (*env)->GetMethodID(env, activity, "getFileName", "()[B");
   LOGI("Getting buffer...(%p)", method);
-  jbyteArray buffer = (jbyteArray) (*env)->CallStaticObjectMethod(env, activity, method);
+  jbyteArray buffer = (jbyteArray) (*env)->CallObjectMethod(env, aapp->activity->clazz, method);
 
   jboolean is_copy;
   jint len;

@@ -36,6 +36,8 @@ public class Keyboard {
 	// Adapted version
 	// of http://stackoverflow.com/questions/220547/printable-char-in-java
 	static public boolean isPrintableChar(int c ) {
+		if(c == '\b' || c == '\n') return true;
+		
 	    Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
 	    return (!Character.isISOControl(c)) &&
 	            block != null &&
@@ -54,15 +56,22 @@ public class Keyboard {
 				}
 				break;
 			default:
-				str = new String(Character.toChars(event.getUnicodeChar()));		
+				if(event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+					str = "\b";
+				} else {
+					str = new String(Character.toChars(event.getUnicodeChar()));
+				}
 				break;
 		}
 		if(str == null) {
 			str = "";
 		}
 		
+		Log.i("waah", String.format("Str <%s>", str));
+		
 		int firstCodePoint = str.codePointAt(0);
 		if(!isPrintableChar(firstCodePoint)) {
+			Log.i("waah", "not printable");
 			str = "";
 		}
 		
