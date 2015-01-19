@@ -8,8 +8,8 @@ class ExampleApp < Waah::App
     clear
 
     font "Sans", :bold
-    font_size 30
-    text 100, 50, "ENTER   |   ME"
+    font_size 160
+    text 200, 150, "ENTER   |   ME"
 
     if pointer.in?
       color 0xff, 0, 0
