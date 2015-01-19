@@ -180,6 +180,7 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
                 mrb_funcall(mrb, keyboard->text_blk, "call", 1, mrb_str);
               }
             }
+            break;
           }
           case KeyRelease: {
             XKeyReleasedEvent *ev = (XKeyReleasedEvent *) &e;
@@ -191,9 +192,8 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
 
         }
       }
-
-
     } 
+
     if(app->redraw) {
       gettimeofday(&tv, NULL);
       unsigned long long ts = tv.tv_sec * 1000000 + tv.tv_usec;
