@@ -283,7 +283,7 @@ static int32_t handle_input(struct android_app* aapp, AInputEvent* event) {
 
     int action = AKeyEvent_getAction(event);
     int key_code = AKeyEvent_getKeyCode(event);
-    if(action == AKEY_EVENT_ACTION_MULTIPLE|| action == AKEY_EVENT_ACTION_UP) {
+    if(action == AKEY_EVENT_ACTION_MULTIPLE || action == AKEY_EVENT_ACTION_DOWN) {
       android_app->have_event = 1;
       android_app->event.action = action;
       android_app->event.key_code = key_code;
@@ -343,6 +343,7 @@ _app_run_android(mrb_state *mrb, mrb_value mrb_app, android_app_t *android_app) 
   app->time = 0;
   LOGI("Entering main loop");
   while(!app->quit) {
+
     if(android_app->have_event) {
       android_app->have_event = 0;
       LOGI("Key event (recovered): action=%d keyCode=%d metaState=0x%x",
@@ -350,8 +351,11 @@ _app_run_android(mrb_state *mrb, mrb_value mrb_app, android_app_t *android_app) 
       android_app->event.key_code,
       android_app->event.meta_state);
 
+      app->redraw = TRUE;
+
       cat_key_event(mrb, android_app, android_app->event.action, android_app->event.key_code, android_app->event.meta_state);
     }
+
 
     while ((ident=ALooper_pollAll(app->redraw ? 0 : -1, NULL, &events, (void**)&source)) >= 0) {
       // Process this event.
@@ -365,6 +369,8 @@ _app_run_android(mrb_state *mrb, mrb_value mrb_app, android_app_t *android_app) 
         goto done;
       }
     }
+
+
 
     /* Now that we've delt with input, draw stuff */
     if (android_app->aapp->window != NULL) {
