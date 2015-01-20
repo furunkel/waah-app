@@ -127,24 +127,22 @@ get_file_name(struct android_app *aapp) {
   jstring strClassName = (*env)->NewStringUTF(env, "org/waah/WaahActivity");
   jclass activity = (jclass)(*env)->CallObjectMethod(env, clazz, findClass, strClassName); 
   LOGI("Activty class (%p)", activity);
-  jmethodID method = (*env)->GetMethodID(env, activity, "getFileName", "()[B");
+  jmethodID method = (*env)->GetMethodID(env, activity, "getFileName", "()Ljava/lang/String;");
   LOGI("Getting buffer...(%p)", method);
-  jbyteArray buffer = (jbyteArray) (*env)->CallObjectMethod(env, aapp->activity->clazz, method);
 
-  jboolean is_copy;
-  jint len;
+  jstring buffer = (jstring) (*env)->CallObjectMethod(env, aapp->activity->clazz, method);
 
   LOGI("Got buffer: %p", buffer);
   if(buffer != NULL) {
-    len = (*env)->GetArrayLength(env, buffer);
+    jsize len = (*env)->GetStringUTFLength(env, buffer);
     file_name = (char *) malloc(len + 1);
     LOGI("Got buffer len: %d", len);
     if(len > 0) {
-      jbyte *cbuffer = (*env)->GetByteArrayElements(env, buffer, &is_copy);
+      char *cbuffer = (*env)->GetStringUTFChars(env, buffer, NULL);
       LOGI("Got cbuffer: %s", cbuffer);
       memcpy(file_name, cbuffer, len);
       file_name[len] = 0;
-      (*env)->ReleaseByteArrayElements(env, buffer, cbuffer, JNI_ABORT);
+      (*env)->ReleaseStringUTFChars(env, buffer, cbuffer);  
     }
   }
   (*vm)->DetachCurrentThread(vm);
@@ -175,23 +173,21 @@ cat_key_event(mrb_state *mrb, android_app_t *app, int action, int code, int meta
     jstring strClassName = (*env)->NewStringUTF(env, "org/waah/Keyboard");
     jclass keyboard = (jclass)(*env)->CallObjectMethod(env, clazz, findClass, strClassName); 
     LOGI("Keyboard class (%p)", keyboard);
-    jmethodID keyboard_method = (*env)->GetStaticMethodID(env, keyboard, "getBuffer", "()[B");
+    jmethodID keyboard_method = (*env)->GetStaticMethodID(env, keyboard, "getBuffer", "()Ljava/lang/String;");
     LOGI("Getting buffer...(%p)", keyboard_method);
-    jbyteArray buffer = (jbyteArray) (*env)->CallStaticObjectMethod(env, keyboard, keyboard_method, action, code, meta_state);
-
-    jboolean is_copy;
-    jint len;
+    jstring buffer = (jstring) (*env)->CallStaticObjectMethod(env, keyboard, keyboard_method, action, code, meta_state);
 
     LOGI("Got buffer: %p", buffer);
     if(buffer != NULL) {
-      len = (*env)->GetArrayLength(env, buffer);
-      LOGI("Got buffer len: %d", len);
+      jsize len = (*env)->GetStringUTFLength(env, buffer);
       if(len > 0) {
-        jbyte *cbuffer = (*env)->GetByteArrayElements(env, buffer, &is_copy);
+        char *cbuffer = (*env)->GetStringUTFChars(env, buffer, NULL);
+        printf("%s" , cbuffer);
+        LOGI("Got buffer len: %d", len);
         LOGI("Got cbuffer: %s", cbuffer);
         mrb_value str = mrb_str_new(mrb, cbuffer, len);
         mrb_funcall(mrb, kb->text_blk, "call", 1, str);
-        (*env)->ReleaseByteArrayElements(env, buffer, cbuffer, JNI_ABORT);
+        (*env)->ReleaseStringUTFChars(env, buffer, cbuffer);  
       }
     }
     (*vm)->DetachCurrentThread(vm);

@@ -6,6 +6,7 @@ class ExampleApp < Waah::App
 
     @lines = []
     keyboard.text do |t|
+      log :info, "<#{t}> #{t.size}"
       @lines.push "" if @lines.empty?
       if t == "\n"
         @lines.push ""

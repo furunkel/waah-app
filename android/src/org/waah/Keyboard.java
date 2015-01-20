@@ -14,7 +14,7 @@ import android.widget.EditText;
 
 public class Keyboard {
 	
-	public static byte[] buffer = new byte[0];
+	public static String buffer = "";
 	
 	static public boolean setVisible(boolean visible)
 	{
@@ -45,46 +45,39 @@ public class Keyboard {
 	}
 	
 	static public boolean dispatchKeyEvent(KeyEvent event) {
-		String str;
 		
 		switch(event.getAction()) {
 			case KeyEvent.ACTION_MULTIPLE:
 				if(event.getKeyCode() == KeyEvent.KEYCODE_UNKNOWN) {
-					str = event.getCharacters();
+					buffer = event.getCharacters();
 				} else {
-					str = "";
+					buffer = "";
 				}
 				break;
 			default:
 				if(event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
-					str = "\b";
+					buffer = "\b";
 				} else {
-					str = new String(Character.toChars(event.getUnicodeChar()));
+					buffer = new String(Character.toChars(event.getUnicodeChar()));
 				}
 				break;
 		}
-		if(str == null) {
-			str = "";
+		if(buffer == null) {
+			buffer = "";
 		}
 		
-		Log.i("waah", String.format("Str <%s>", str));
+		Log.i("waah", String.format("Str <%s>", buffer));
 		
-		int firstCodePoint = str.codePointAt(0);
+		int firstCodePoint = buffer.codePointAt(0);
 		if(!isPrintableChar(firstCodePoint)) {
 			Log.i("waah", "not printable");
-			str = "";
-		}
-		
-		try {
-			buffer = str.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			buffer = new byte[0];
+			buffer = "";
 		}
 		
 		return false;
 	}
 	
-	static public byte[] getBuffer() {
+	static public String getBuffer() {
 		return buffer;
 	}
 }

@@ -29,12 +29,8 @@ public class WaahActivity extends NativeActivity {
     	this.fileName = fileName;
     }
     
-    public byte[] getFileName() {
-    	try {
-			return fileName.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			return new byte[0];
-		}
+    public String getFileName() {
+    	return fileName;
     }
     
     @Override
