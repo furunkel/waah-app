@@ -25,6 +25,16 @@ MRuby::Build.new do |conf|
   end
 end
 
+MRuby::CrossBuild.new('linuxfb') do |conf|
+  toolchain :clang
+  conf.gembox 'full-core'
+
+  conf.gem File.expand_path(File.dirname(__FILE__)) do |g|
+    g.configure conf, :linuxfb, false
+  end
+end
+
+__END__
 
 MRuby::CrossBuild.new('androideabi') do |conf|
   toolchain :androideabi

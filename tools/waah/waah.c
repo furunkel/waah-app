@@ -22,6 +22,8 @@ static mrb_value mrb_app;
 #include "waah-x11.h"
 #elif defined(WAAH_PLATFORM_WINDOWS)
 #include "waah-windows.h"
+#elif defined(WAAH_PLATFORM_LINUXFB)
+#include "waah-linuxfb.h"
 #else
 #error Unknown platform
 #endif
@@ -368,7 +370,6 @@ int main(int argc, char **argv) {
   mrb_alias_method(mrb, cKeyboard, mrb_intern_cstr(mrb, "visible"), mrb_intern_cstr(mrb, "show"));
   mrb_define_method(mrb, cKeyboard, "hide", return_self_m, ARGS_NONE());
 
-
 #ifdef WAAH_PLATFORM_ANDROID
 
   LOGI("Registered common methods...");
@@ -444,6 +445,8 @@ int main(int argc, char **argv) {
 
 #if defined(WAAH_PLATFORM_X11)
   _app_run_xlib(mrb, mrb_app, app);
+#elif defined(WAAH_PLATFORM_LINUXFB)
+  _app_run_linuxfb(mrb, mrb_app, app);
 #elif defined(WAAH_PLATFORM_ANDROID)
   app_dummy();
   LOGI("Starting android main loop");
