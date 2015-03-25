@@ -20,18 +20,24 @@ MRuby::Build.new do |conf|
   toolchain :clang
   conf.gembox 'full-core'
 
-  conf.gem File.expand_path(File.dirname(__FILE__)) do |g|
+
+  conf.gem github: 'furunkel/waah-canvas' do |g|
     g.configure conf, :x11, false
   end
+
+  conf.gem File.expand_path(File.dirname(__FILE__))
 end
 
 MRuby::CrossBuild.new('linuxfb') do |conf|
   toolchain :clang
   conf.gembox 'full-core'
 
-  conf.gem File.expand_path(File.dirname(__FILE__)) do |g|
+  conf.gem github: 'furunkel/waah-canvas' do |g|
     g.configure conf, :linuxfb, false
   end
+
+  conf.gem File.expand_path(File.dirname(__FILE__)) 
+
 end
 
 __END__

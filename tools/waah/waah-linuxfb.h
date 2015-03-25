@@ -71,9 +71,6 @@ _app_run_linuxfb(mrb_state *mrb, mrb_value mrb_app, linuxfb_app_t *linuxfb_app) 
     case 16: 
       cr_format = CAIRO_FORMAT_RGB16_565;
       break;
-    case 24:
-      cr_format = CAIRO_FORMAT_RGB24;
-      break;
     case 32:
       cr_format = CAIRO_FORMAT_ARGB32;
       break;
@@ -85,11 +82,11 @@ _app_run_linuxfb(mrb_state *mrb, mrb_value mrb_app, linuxfb_app_t *linuxfb_app) 
   fprintf(stderr, "bpp %d\n", linuxfb_app->fb_vinfo.bits_per_pixel);
 
 	display->surface = cairo_image_surface_create_for_data(linuxfb_app->fb_data,
-	              cr_format,
-	              linuxfb_app->fb_vinfo.xres,
-	              linuxfb_app->fb_vinfo.yres,
-	              cairo_format_stride_for_width(cr_format,
-linuxfb_app->fb_vinfo.xres));
+                       cr_format,
+                       linuxfb_app->fb_vinfo.xres,
+                       linuxfb_app->fb_vinfo.yres,
+                       cairo_format_stride_for_width(cr_format,
+                       linuxfb_app->fb_vinfo.xres));
 
 
   cairo_t *cr = cairo_create(display->surface);
@@ -123,6 +120,8 @@ linuxfb_app->fb_vinfo.xres));
         cairo_paint(cr);
       }
     }
+    usleep(usecs / 2);
+
   }
 
   cairo_destroy(cr);
