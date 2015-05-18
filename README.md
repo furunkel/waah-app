@@ -44,7 +44,7 @@ end
 
 Currently the following platforms are supported:
 
-* Linux (X11)
+* Linux (X11, framebuffer)
 * Windows
 * Android (Software renderer)
 
