@@ -137,9 +137,32 @@ static mrb_value
 pointer_in(mrb_state *mrb, mrb_value self) {
   pointer_t *pointer;
   int r;
+  double x, y, w, h;
+  mrb_value *rect;
+  int argc;
 
   Data_Get_Struct(mrb, self, &_pointer_type_info, pointer);
-  _path_contains(((waah_canvas_t *)pointer->app)->cr, pointer->x, pointer->y, 0, 0, &r, NULL);
+  argc = mrb_get_args(mrb, "|ffff", &x, &y, &w, &h);
+
+  if(argc == 4) {
+    double x1, y1, x2, y2;
+    double ex1, ex2, ey1, ey2;
+
+    x1 = pointer->x;
+    y1 = pointer->y;
+
+    ex1 = x;
+    ey1 = y;
+    ex2 = x + w;
+    ey2 = y + h;
+
+    r = x1 >= ex1 && x1 <= ex2 &&
+        y1 >= ey1 && y1 <= ey2;
+  } else if(argc == 0) {
+    _path_contains(((waah_canvas_t *)pointer->app)->cr, pointer->x, pointer->y, 0, 0, &r, NULL);
+  } else {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "invalid number of arguments (pass 4 or 0)");
+  }
 
   return r ? mrb_true_value() : mrb_false_value();
 }
