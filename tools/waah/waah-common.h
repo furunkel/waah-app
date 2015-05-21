@@ -78,6 +78,20 @@ _path_contains(cairo_t *cr, int x1, int y1, int x2, int y2, int *r1, int *r2) {
   }
 }
 
+static void
+_path_extents_contains(cairo_t *cr, int x1, int y1, int x2, int y2, int *r1, int *r2) {
+  double ex1, ex2, ey1, ey2;
+  cairo_path_extents(cr, &ex1, &ey1, &ex2, &ey2);
+
+  *r1 = x1 >= ex1 && x1 <= ex2 &&
+        y1 >= ey1 && y1 <= ey2;
+
+  if(r2 != NULL) {
+    *r2 = x2 >= ex1 && x2 <= ex2 &&
+          y2 >= ey1 && y2 <= ey2;
+  }
+}
+
 static mrb_value
 pointer_down(mrb_state *mrb, mrb_value self) {
 
@@ -126,6 +140,17 @@ pointer_in(mrb_state *mrb, mrb_value self) {
 
   Data_Get_Struct(mrb, self, &_pointer_type_info, pointer);
   _path_contains(((waah_canvas_t *)pointer->app)->cr, pointer->x, pointer->y, 0, 0, &r, NULL);
+
+  return r ? mrb_true_value() : mrb_false_value();
+}
+
+static mrb_value
+pointer_in_extents(mrb_state *mrb, mrb_value self) {
+  pointer_t *pointer;
+  int r;
+
+  Data_Get_Struct(mrb, self, &_pointer_type_info, pointer);
+  _path_extents_contains(((waah_canvas_t *)pointer->app)->cr, pointer->x, pointer->y, 0, 0, &r, NULL);
 
   return r ? mrb_true_value() : mrb_false_value();
 }

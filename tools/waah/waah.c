@@ -357,6 +357,7 @@ int main(int argc, char **argv) {
   mrb_define_method(mrb, cPointer, "down?", pointer_down, ARGS_OPT(1));
   mrb_define_method(mrb, cPointer, "pressed?", pointer_pressed, ARGS_OPT(1));
   mrb_define_method(mrb, cPointer, "in?", pointer_in, ARGS_NONE());
+  mrb_define_method(mrb, cPointer, "in_extents?", pointer_in_extents, ARGS_NONE());
   mrb_define_method(mrb, cPointer, "x", pointer_x, ARGS_NONE());
   mrb_define_method(mrb, cPointer, "y", pointer_y, ARGS_NONE());
 
