@@ -1,5 +1,7 @@
 struct app_s;
 
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 #define N_KEYS 255
 typedef struct keyboard_s {
   unsigned long pressed[N_KEYS];
@@ -17,6 +19,7 @@ typedef struct pointer_s {
   int prev_y;
   unsigned long pressed[N_BUTTONS];
   unsigned long released[N_BUTTONS];
+  long sleep;
   struct app_s *app;
 } pointer_t;
 
@@ -101,6 +104,8 @@ pointer_down(mrb_state *mrb, mrb_value self) {
   Data_Get_Struct(mrb, self, &_pointer_type_info, pointer);
   mrb_get_args(mrb, "|i", &button);
 
+  if(pointer->sleep > 0) return mrb_false_value();
+
   if(button <= 0 || button > N_BUTTONS) {
     return mrb_false_value();
   }
@@ -138,14 +143,13 @@ pointer_in(mrb_state *mrb, mrb_value self) {
   pointer_t *pointer;
   int r;
   double x, y, w, h;
-  mrb_value *rect;
   int argc;
 
   Data_Get_Struct(mrb, self, &_pointer_type_info, pointer);
   argc = mrb_get_args(mrb, "|ffff", &x, &y, &w, &h);
 
   if(argc == 4) {
-    double x1, y1, x2, y2;
+    double x1, y1;
     double ex1, ex2, ey1, ey2;
 
     x1 = pointer->x;
@@ -265,4 +269,24 @@ keyboard_pressed(mrb_state *mrb, mrb_value self) {
   } else {
     return mrb_true_value();
   }
+}
+
+static void
+pointers_unsleep(struct app_s *app, long msecs) {
+  int i;
+  for(i = 0; i < N_POINTERS; i++) {
+    app->pointers[i]->sleep = MAX(app->pointers[i]->sleep - msecs, 0);
+  }
+}
+
+static mrb_value
+pointer_sleep(mrb_state *mrb, mrb_value self) {
+
+  pointer_t *pointer;
+  double secs;
+  Data_Get_Struct(mrb, self, &_pointer_type_info, pointer);
+  mrb_get_args(mrb, "f", &secs);
+
+  pointer->sleep = secs * 1000;
+  return self;
 }

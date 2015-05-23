@@ -175,6 +175,7 @@ app_initialize(mrb_state *mrb, mrb_value self) {
   mrb_value mrb_pointers;
   size_t title_len;
   char *title = NULL;
+  char default_title[] = "Waah";
 
   DATA_PTR(self) = app;
   DATA_TYPE(self) = &_waah_canvas_type_info;
@@ -185,7 +186,7 @@ app_initialize(mrb_state *mrb, mrb_value self) {
   app->rate = 1.0;
 
   if(title == NULL) {
-    title = "Waah";
+    title = default_title;
     title_len = strlen(title);
   }
   app->title = mrb_calloc(mrb, sizeof(char), title_len + 1);
@@ -360,6 +361,7 @@ int main(int argc, char **argv) {
   mrb_define_method(mrb, cPointer, "in_extents?", pointer_in_extents, ARGS_NONE());
   mrb_define_method(mrb, cPointer, "x", pointer_x, ARGS_NONE());
   mrb_define_method(mrb, cPointer, "y", pointer_y, ARGS_NONE());
+  mrb_define_method(mrb, cPointer, "sleep", pointer_sleep, ARGS_REQ(1));
 
   mrb_define_method(mrb, cKeyboard, "text", keyboard_text, ARGS_BLOCK());
   mrb_define_method(mrb, cKeyboard, "down?", keyboard_down, ARGS_REQ(1));
