@@ -276,6 +276,7 @@ pointers_unsleep(struct app_s *app, long msecs) {
   int i;
   for(i = 0; i < N_POINTERS; i++) {
     app->pointers[i]->sleep = MAX(app->pointers[i]->sleep - msecs, 0);
+    fprintf(stderr, "%d %ld %ld\n",i, app->pointers[i]->sleep, msecs);
   }
 }
 

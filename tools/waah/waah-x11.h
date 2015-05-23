@@ -200,8 +200,8 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
       if((double)(ts - app->last_redraw) / 1000000 > secs) {
 
         app->redraw = FALSE;
-        app->last_redraw = ts;
         pointers_unsleep(app, (ts - app->last_redraw) / 1000);
+        app->last_redraw = ts;
 
         canvas->cr = cairo_create(display->surface2);
         mrb_funcall(mrb, mrb_app, "draw", 0, NULL);

@@ -202,8 +202,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
           HDC hDC;
 
           base_app->redraw = FALSE;
-          base_app->last_redraw = ts;
           pointers_unsleep(app, ts - base_app->last_redraw);
+          base_app->last_redraw = ts;
 
           hDC = BeginPaint(hWnd, &paintStruct);
           canvas->surface = cairo_win32_surface_create(hDC);
