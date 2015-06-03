@@ -110,7 +110,8 @@ pointer_down(mrb_state *mrb, mrb_value self) {
     return mrb_false_value();
   }
 
-  if(pointer->pressed[button] <= pointer->released[button]) {
+  if(pointer->pressed[button] == 0 ||
+     pointer->pressed[button] < pointer->released[button]) {
     return mrb_false_value();
   } else {
     return mrb_true_value();

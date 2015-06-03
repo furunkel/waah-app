@@ -66,7 +66,7 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
   mrb_funcall(mrb, mrb_app, "setup", 0, NULL);
 
   if(mrb->exc) {
-    mrb_print_error(mrb);
+    mrb_print_backtrace(mrb);
   }
 
   XIM im;
@@ -96,6 +96,8 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
 
     if(select(fd + 1, &fds, 0, 0, &tv)) {
       app->redraw = TRUE;
+      ++app->time;
+
       XEvent e;
       while(XPending(dpy)) XNextEvent(dpy, &e);
 
@@ -205,16 +207,17 @@ _app_run_xlib(mrb_state *mrb, mrb_value mrb_app, x11_app_t *x11_app) {
 
         canvas->cr = cairo_create(display->surface2);
         mrb_funcall(mrb, mrb_app, "draw", 0, NULL);
+
+        if (mrb->exc) {
+          mrb_print_error(mrb);
+        }
         cairo_destroy(canvas->cr);
         canvas->cr = NULL;
-
-        ++app->time;
 
         cairo_set_source_surface(cr, display->surface2, 0, 0);
         cairo_paint(cr);
 
         XFlush(dpy);
-
       }
     }
   }
