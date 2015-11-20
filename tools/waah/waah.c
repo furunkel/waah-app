@@ -339,7 +339,7 @@ int main(int argc, char **argv) {
   struct RClass *cCanvas = mrb_class_get_under(mrb, mWaah, "Canvas");
   cApp = mrb_define_class_under(mrb, mWaah, "App", cCanvas);
   MRB_SET_INSTANCE_TT(cApp, MRB_TT_DATA);
-  mrb_define_method(mrb, cApp, "initialize", app_initialize, ARGS_REQ(2) | ARGS_OPT(1));
+  mrb_define_method(mrb, cApp, "initialize", app_initialize, MRB_ARGS_REQ(2) | MRB_ARGS_OPT(1));
 
   cPointer = mrb_define_class_under(mrb, cApp, "Pointer", mrb->object_class);
   MRB_SET_INSTANCE_TT(cPointer, MRB_TT_DATA);
@@ -347,47 +347,47 @@ int main(int argc, char **argv) {
   cKeyboard = mrb_define_class_under(mrb, cApp, "Keyboard", mrb->object_class);
   MRB_SET_INSTANCE_TT(cKeyboard, MRB_TT_DATA);
 
-  mrb_define_method(mrb, cApp, "run", app_run, ARGS_NONE());
-  mrb_define_method(mrb, cApp, "redraw", app_redraw, ARGS_NONE());
-  mrb_define_method(mrb, cApp, "setup", app_setup, ARGS_NONE());
-  mrb_define_method(mrb, cApp, "rate", app_rate, ARGS_OPT(1));
-  mrb_define_method(mrb, cApp, "keyboard", app_keyboard, ARGS_NONE());
-  mrb_define_method(mrb, cApp, "pointer", app_pointer, ARGS_OPT(1));
+  mrb_define_method(mrb, cApp, "run", app_run, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cApp, "redraw", app_redraw, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cApp, "setup", app_setup, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cApp, "rate", app_rate, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, cApp, "keyboard", app_keyboard, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cApp, "pointer", app_pointer, MRB_ARGS_OPT(1));
   mrb_alias_method(mrb, cApp, mrb_intern_cstr(mrb, "mouse"), mrb_intern_cstr(mrb, "pointer"));
 
-  mrb_define_method(mrb, cPointer, "down?", pointer_down, ARGS_OPT(1));
-  mrb_define_method(mrb, cPointer, "pressed?", pointer_pressed, ARGS_OPT(1));
-  mrb_define_method(mrb, cPointer, "in?", pointer_in, ARGS_OPT(1));
-  mrb_define_method(mrb, cPointer, "in_extents?", pointer_in_extents, ARGS_NONE());
-  mrb_define_method(mrb, cPointer, "x", pointer_x, ARGS_NONE());
-  mrb_define_method(mrb, cPointer, "y", pointer_y, ARGS_NONE());
-  mrb_define_method(mrb, cPointer, "sleep", pointer_sleep, ARGS_REQ(1));
+  mrb_define_method(mrb, cPointer, "down?", pointer_down, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, cPointer, "pressed?", pointer_pressed, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, cPointer, "in?", pointer_in, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, cPointer, "in_extents?", pointer_in_extents, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cPointer, "x", pointer_x, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cPointer, "y", pointer_y, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cPointer, "sleep", pointer_sleep, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, cKeyboard, "text", keyboard_text, ARGS_BLOCK());
-  mrb_define_method(mrb, cKeyboard, "down?", keyboard_down, ARGS_REQ(1));
-  mrb_define_method(mrb, cKeyboard, "pressed?", keyboard_pressed, ARGS_REQ(1));
+  mrb_define_method(mrb, cKeyboard, "text", keyboard_text, MRB_ARGS_BLOCK());
+  mrb_define_method(mrb, cKeyboard, "down?", keyboard_down, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, cKeyboard, "pressed?", keyboard_pressed, MRB_ARGS_REQ(1));
 
 
-  mrb_define_method(mrb, cKeyboard, "show", return_self_m, ARGS_OPT(1));
-  mrb_define_method(mrb, cKeyboard, "toggle", return_self_m, ARGS_NONE());
+  mrb_define_method(mrb, cKeyboard, "show", return_self_m, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, cKeyboard, "toggle", return_self_m, MRB_ARGS_NONE());
   mrb_alias_method(mrb, cKeyboard, mrb_intern_cstr(mrb, "visible"), mrb_intern_cstr(mrb, "show"));
-  mrb_define_method(mrb, cKeyboard, "hide", return_self_m, ARGS_NONE());
+  mrb_define_method(mrb, cKeyboard, "hide", return_self_m, MRB_ARGS_NONE());
 
 #ifdef WAAH_PLATFORM_ANDROID
 
   LOGI("Registered common methods...");
 
-  mrb_define_method(mrb, cKeyboard, "show", keyboard_show, ARGS_OPT(1));
+  mrb_define_method(mrb, cKeyboard, "show", keyboard_show, MRB_ARGS_OPT(1));
 
-  mrb_define_method(mrb, cKeyboard, "toggle", keyboard_toggle, ARGS_NONE());
+  mrb_define_method(mrb, cKeyboard, "toggle", keyboard_toggle, MRB_ARGS_NONE());
   mrb_alias_method(mrb, cKeyboard, mrb_intern_cstr(mrb, "visible"), mrb_intern_cstr(mrb, "show"));
-  mrb_define_method(mrb, cKeyboard, "hide", keyboard_hide, ARGS_NONE());
+  mrb_define_method(mrb, cKeyboard, "hide", keyboard_hide, MRB_ARGS_NONE());
 
   struct RClass *cImage = mrb_class_get_under(mrb, mWaah, "Image");
-  mrb_define_class_method(mrb, cImage, "asset", image_load_asset, ARGS_REQ(1));
+  mrb_define_class_method(mrb, cImage, "asset", image_load_asset, MRB_ARGS_REQ(1));
 
   struct RClass *cFont = mrb_class_get_under(mrb, mWaah, "Font");
-  mrb_define_class_method(mrb, cFont, "asset", font_load_asset, ARGS_REQ(1));
+  mrb_define_class_method(mrb, cFont, "asset", font_load_asset, MRB_ARGS_REQ(1));
   LOGI("Registered android specific methods...");
   AAssetManager* mgr = aapp->activity->assetManager;
   LOGI("Getting file name...");
@@ -410,13 +410,13 @@ int main(int argc, char **argv) {
   LOGI("Evaluating ´%s'", buffer);
   v = mrb_load_string(mrb, buffer);
 
-  mrb_define_method(mrb, cApp, "android?", return_true_m, ARGS_NONE());
-  mrb_define_method(mrb, cApp, "log", app_log_android, ARGS_REQ(2) | ARGS_OPT(1));
-  mrb_define_method(mrb, cApp, "log_level", return_nil_m, ARGS_OPT(1));
+  mrb_define_method(mrb, cApp, "android?", return_true_m, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cApp, "log", app_log_android, MRB_ARGS_REQ(2) | MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, cApp, "log_level", return_nil_m, MRB_ARGS_OPT(1));
 #else
-  mrb_define_method(mrb, cApp, "log", app_log_stderr, ARGS_REQ(2) | ARGS_OPT(1));
-  mrb_define_method(mrb, cApp, "android?", return_false_m, ARGS_NONE());
-  mrb_define_method(mrb, cApp, "log_level", app_log_level, ARGS_OPT(1));
+  mrb_define_method(mrb, cApp, "log", app_log_stderr, MRB_ARGS_REQ(2) | MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, cApp, "android?", return_false_m, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cApp, "log_level", app_log_level, MRB_ARGS_OPT(1));
 
   if(argc > 1) {
     filename = argv[1];
